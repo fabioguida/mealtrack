@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Peso · Meal Tracker{% endblock %}
+{% block content %}
+<p class="eyebrow">Pesate</p>
+<h1>Peso</h1>
+{% if errors %}<ul class="errors" data-test="errors">{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+
+<form method="post" action="/peso" class="riga-form">
+  <label>Data <input type="date" name="day" value="{{ form.date }}" required></label>
+  <label>Peso (kg) <input type="number" name="kg" value="{{ form.kg }}" min="25" max="300" step="0.1" inputmode="decimal" required autofocus></label>
+  <button class="btn" type="submit">Registra</button>
+</form>
+<p class="hint">Una pesata al giorno: se ne registri un'altra nello stesso giorno, sostituisce la precedente. Il fabbisogno si ricalcola da solo.</p>
+
+{% if chart %}
+<figure class="grafico" data-test="chart">
+  <svg viewBox="0 0 {{ chart.w }} {{ chart.h }}" role="img" aria-label="Andamento del peso negli ultimi 90 giorni">
+    <line x1="{{ chart.pad }}" y1="{{ chart.h - chart.pad }}" x2="{{ chart.w - chart.pad }}" y2="{{ chart.h - chart.pad }}" class="asse"/>
+    <line x1="{{ chart.pad }}" y1="{{ chart.pad }}" x2="{{ chart.pad }}" y2="{{ chart.h - chart.pad }}" class="asse"/>
+    <text x="{{ chart.pad - 6 }}" y="{{ chart.pad + 4 }}" class="etichetta" text-anchor="end">{{ chart.hi|num(1) }}</text>
+    <text x="{{ chart.pad - 6 }}" y="{{ chart.h - chart.pad }}" class="etichetta" text-anchor="end">{{ chart.lo|num(1) }}</text>
+    <text x="{{ chart.pad }}" y="{{ chart.h - 8 }}" class="etichetta">{{ chart.start|d }}</text>
+    <text x="{{ chart.w - chart.pad }}" y="{{ chart.h - 8 }}" class="etichetta" text-anchor="end">{{ chart.end|d }}</text>
+    <polyline points="{{ chart.polyline }}" class="linea"/>
+    {% for x, y, d, k in chart.points %}<circle cx="{{ x }}" cy="{{ y }}" r="3.5" class="punto"><title>{{ d|d }}: {{ k|num(1) }} kg</title></circle>{% endfor %}
+  </svg>
+  <figcaption class="mono">Ultimi 90 giorni</figcaption>
+</figure>
+{% endif %}
+
+{% if rows %}
+<ul class="elenco" data-test="weights">
+{% for r in rows %}
+  <li>
+    <span class="nome">{{ r.date|d }}</span>
+    <span class="mono">{{ r.kg|num(1) }} kg</span>
+    <form method="post" action="/peso/{{ r.id }}/elimina" data-confirm="Eliminare la pesata del {{ r.date|d }}?"><button type="submit" class="rimuovi" aria-label="Elimina">×</button></form>
+  </li>
+{% endfor %}
+</ul>
+{% else %}
+<p class="hint" data-test="empty">Nessuna pesata registrata.</p>
+{% endif %}
+{% endblock %}

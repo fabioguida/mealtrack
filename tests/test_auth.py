@@ -20,7 +20,7 @@ def test_session_token_round_trip():
 
 
 def test_protected_routes_redirect_anonymous_to_login(anon):
-    for url in ["/", "/pasti", "/pasti/nuovo", "/profilo"]:
+    for url in ["/", "/pasti", "/pasti/nuovo", "/profilo", "/peso", "/attivita"]:
         r = anon.get(url, follow_redirects=False)
         assert r.status_code == 303, url
         assert r.headers["location"].startswith("/accedi?next="), url

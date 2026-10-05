@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Attività · Meal Tracker{% endblock %}
+{% block content %}
+<p class="eyebrow">Allenamenti</p>
+<h1>Attività</h1>
+{% if errors %}<ul class="errors" data-test="errors">{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+
+<form method="post" action="/attivita" class="riga-form">
+  <label>Data <input type="date" name="day" value="{{ form.date }}" required></label>
+  <label>Attività
+    <select name="activity">
+      {% for key, a in met.items() %}<option value="{{ key }}"{% if form.activity == key %} selected{% endif %}>{{ a.label }}{% if weight %} · ~{{ (a.met * weight)|num(0) }} kcal/h{% endif %}</option>{% endfor %}
+    </select>
+  </label>
+  <label>Durata (minuti) <input type="number" name="duration_min" value="{{ form.duration_min }}" min="1" max="600" step="1" inputmode="numeric" required></label>
+  <button class="btn" type="submit">Registra</button>
+</form>
+<p class="hint">Le calorie bruciate (MET × peso × ore, Compendium of Physical Activities) alzano il target di quel giorno.</p>
+
+{% if rows %}
+<ul class="elenco" data-test="workouts">
+{% for r in rows %}
+  <li>
+    <span class="nome">{{ met[r.activity].label if r.activity in met else r.activity }} <small>{{ r.date|d }} · {{ r.duration_min|num(0) }} min</small></span>
+    <span class="mono">{{ r.kcal_burned|num(0) }} kcal</span>
+    <form method="post" action="/attivita/{{ r.id }}/elimina" data-confirm="Eliminare questo allenamento?"><button type="submit" class="rimuovi" aria-label="Elimina">×</button></form>
+  </li>
+{% endfor %}
+</ul>
+{% else %}
+<p class="hint" data-test="empty">Nessun allenamento registrato.</p>
+{% endif %}
+{% endblock %}

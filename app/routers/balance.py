@@ -1,53 +1,40 @@
-"""The daily balance: four bars and the day's meals. Home page of the app."""
+"""The daily balance: four bars, the day's meals, activity and the weekly trend."""
 
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from sqlalchemy import select
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import Session
 
+from app.calc.activity import MET_TABLE
 from app.calc.balance import assess
-from app.calc.nutrition import Totals
-from app.calc.targets import Targets
+from app.calc.trend import weekly_trend
 from app.db import get_db
-from app.deps import current_targets, current_user, templates
-from app.models import Meal, User
+from app.deps import ProfileRequired, current_user, templates
+from app.models import User
+from app.services import day_meals, day_workouts, meals_totals, targets_for, week_days
 
 router = APIRouter()
 
 
-def day_meals(db: Session, user: User, day: date) -> list[Meal]:
-    start = datetime.combine(day, datetime.min.time())
-    return db.scalars(
-        select(Meal)
-        .options(selectinload(Meal.items))
-        .where(
-            Meal.user_id == user.id,
-            Meal.datetime >= start,
-            Meal.datetime < start + timedelta(days=1),
-        )
-        .order_by(Meal.datetime)
-    ).all()
-
-
-def day_totals(meals: list[Meal]) -> Totals:
-    total = Totals()
-    for m in meals:
-        for i in m.items:
-            total = total + Totals(i.kcal, i.protein_g, i.carbs_g, i.fat_g)
-    return total
-
-
-def _render(request: Request, db: Session, user: User, targets: Targets, day: date):
+def _render(request: Request, db: Session, user: User, day: date):
+    targets = targets_for(db, user, day)
+    if targets is None:
+        raise ProfileRequired()
     meals = day_meals(db, user, day)
+    workouts = day_workouts(db, user, day)
+    extra = sum(w.kcal_burned for w in workouts)
     ctx = {
         "day": day,
         "today": date.today(),
         "prev_day": day - timedelta(days=1),
         "next_day": day + timedelta(days=1),
         "meals": meals,
-        "balance": assess(day_totals(meals), targets),
+        "workouts": workouts,
+        "activity_kcal": extra,
+        "met": MET_TABLE,
+        "balance": assess(meals_totals(meals), targets, extra_kcal=extra),
         "targets": targets,
+        "trend": weekly_trend(week_days(db, user, day)),
     }
     # HTMX day navigation swaps only the balance block.
     name = "partials/balance.html" if request.headers.get("HX-Request") else "balance/day.html"
@@ -55,25 +42,16 @@ def _render(request: Request, db: Session, user: User, targets: Targets, day: da
 
 
 @router.get("/")
-def oggi(
-    request: Request,
-    db: Session = Depends(get_db),
-    user: User = Depends(current_user),
-    targets: Targets = Depends(current_targets),
-):
-    return _render(request, db, user, targets, date.today())
+def oggi(request: Request, db: Session = Depends(get_db), user: User = Depends(current_user)):
+    return _render(request, db, user, date.today())
 
 
 @router.get("/giorno/{day}")
 def giorno(
-    request: Request,
-    day: str,
-    db: Session = Depends(get_db),
-    user: User = Depends(current_user),
-    targets: Targets = Depends(current_targets),
+    request: Request, day: str, db: Session = Depends(get_db), user: User = Depends(current_user)
 ):
     try:
         parsed = date.fromisoformat(day)
     except ValueError:
         raise HTTPException(404)
-    return _render(request, db, user, targets, parsed)
+    return _render(request, db, user, parsed)

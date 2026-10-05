@@ -102,6 +102,29 @@ input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px;bord
 .piccola .valore{font-size:12px}
 @media (max-width:420px){.piccole{grid-template-columns:1fr}}
 .pasti-giorno h2{margin-top:36px}
+.settimana{margin-top:18px;padding:16px;background:var(--white);border:1px solid var(--line);border-left:4px solid var(--line)}
+.settimana .testa{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.settimana .nome{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.settimana .valore{font-family:var(--mono);font-size:13px;color:var(--muted)}
+.settimana .valore b{font-family:var(--display);font-weight:700;font-size:20px;color:var(--navy)}
+.settimana .resto{margin:8px 0 0;font-size:15px}
+.settimana.in_linea{border-left-color:var(--ok)}
+.settimana.sopra{border-left-color:var(--over)}
+.settimana.sotto{border-left-color:var(--accent)}
+
+/* weights and workouts */
+.riga-form{display:grid;grid-template-columns:1fr 1fr auto;gap:0 16px;align-items:end}
+.riga-form .btn{margin-bottom:14px}
+@media (max-width:640px){.riga-form{grid-template-columns:1fr}}
+.grafico{margin:24px 0;padding:12px;background:var(--white);border:1px solid var(--line)}
+.grafico svg{display:block;width:100%;height:auto}
+.grafico .asse{stroke:var(--line);stroke-width:1}
+.grafico .linea{fill:none;stroke:var(--navy);stroke-width:2}
+.grafico .punto{fill:var(--accent);stroke:var(--navy);stroke-width:1.5}
+.grafico .etichetta{font-family:var(--mono);font-size:11px;fill:var(--muted)}
+.grafico figcaption{margin-top:6px;color:var(--muted)}
+.elenco li{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:12px 0;border-bottom:1px solid var(--line)}
+.elenco li form{margin:0}
 .elenco .foto{flex-shrink:0;width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:var(--navy);color:var(--accent);font-family:var(--display);font-weight:800;font-size:18px;border-radius:2px}
 .pasti-giorno .elenco li a{align-items:center}
 .pasti-giorno .elenco .nome{flex:1}
@@ -109,6 +132,7 @@ input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px;bord
 /* search results and lists */
 .risultati,.voci,.elenco{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
 .risultati li button,.voci li,.elenco li a{display:flex;flex-direction:column;gap:2px;width:100%;padding:12px 0;border:0;border-bottom:1px solid var(--line);background:transparent;font:inherit;text-align:left;cursor:pointer}
+.elenco li:has(> a){display:block;padding:0;border-bottom:0}
 .risultati li button:hover .nome,.elenco li a:hover .nome{color:var(--navy);text-decoration:underline}
 .risultati .mono,.voci .mono,.elenco .mono{color:var(--muted)}
 .voci li,.elenco li a{flex-direction:row;justify-content:space-between;align-items:baseline;gap:16px}

@@ -5,8 +5,6 @@ import pytest
 from app.calc.balance import assess
 from app.calc.nutrition import Totals
 from app.calc.targets import Targets
-from app.deps import current_targets
-from app.main import app
 from tests.conftest import make_food
 
 TARGETS = Targets(bmr=1700, tdee=2300, kcal=1900, protein_g=120, carbs_g=200, fat_g=60)
@@ -14,9 +12,8 @@ TARGETS = Targets(bmr=1700, tdee=2300, kcal=1900, protein_g=120, carbs_g=200, fa
 
 @pytest.fixture
 def fixed_targets(client):
-    app.dependency_overrides[current_targets] = lambda: TARGETS
-    yield TARGETS
-    app.dependency_overrides.pop(current_targets, None)
+    """The `user` fixture's profile gives a 1913.125 kcal target."""
+    yield
 
 
 @pytest.fixture
@@ -51,7 +48,7 @@ def test_within_target_is_green_with_remaining(client, fixed_targets, chow):
     r = client.get("/")
     assert r.status_code == 200
     assert 'class="barra grande ok"' in r.text
-    assert "rimangono 300 kcal" in r.text
+    assert "rimangono 313 kcal" in r.text
     assert 'data-test="kcal">1600<' in r.text
     assert 'data-test="day-meals"' in r.text
     assert f"/giorno/{(date.today() - timedelta(days=1)).isoformat()}" in r.text
@@ -62,7 +59,7 @@ def test_over_target_is_red(client, fixed_targets, chow):
     _log(client, chow, 525, f"{today}T13:30")  # 2,100 kcal
     r = client.get("/")
     assert 'class="barra grande over"' in r.text
-    assert "200 kcal oltre il target" in r.text
+    assert "187 kcal oltre il target" in r.text
 
 
 def test_empty_day_and_disclaimer(client, fixed_targets):

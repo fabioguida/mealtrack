@@ -63,6 +63,18 @@ class Weight(Base):
     kg: Mapped[float] = mapped_column(Float, nullable=False)
 
 
+class Workout(Base):
+    __tablename__ = "workouts"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    date: Mapped[date] = mapped_column(Date, nullable=False)
+    activity: Mapped[str] = mapped_column(String(32), nullable=False)
+    duration_min: Mapped[float] = mapped_column(Float, nullable=False)
+    # Computed at save time from the MET table and the weight of that day.
+    kcal_burned: Mapped[float] = mapped_column(Float, nullable=False)
+
+
 class Food(Base):
     __tablename__ = "foods"
 

@@ -17,7 +17,7 @@
     </div>
     <div class="traccia"><div class="riempimento" style="width:{{ b.kcal.percent }}%"></div></div>
     <p class="resto" data-test="kcal-rest">
-      {% if b.kcal.over %}{{ (-b.kcal.remaining)|num(0) }} kcal oltre il target{% else %}rimangono {{ b.kcal.remaining|num(0) }} kcal{% endif %}
+      {% if b.kcal.over %}{{ (-b.kcal.remaining)|num(0) }} kcal oltre il target{% else %}rimangono {{ b.kcal.remaining|num(0) }} kcal{% endif %}{% if activity_kcal %} <span class="mono" data-test="activity">(target {{ targets.kcal|num(0) }} + {{ activity_kcal|num(0) }} di attività)</span>{% endif %}
     </p>
   </div>
 
@@ -42,6 +42,14 @@
   </div>
 </section>
 
+<section class="settimana {{ trend.verdict }}" data-test="trend">
+  <div class="testa">
+    <span class="nome">Ultimi 7 giorni</span>
+    {% if trend.verdict != 'pochi_dati' %}<span class="valore"><b data-test="week-avg">{{ trend.eaten_avg|num(0) }}</b> / {{ trend.allowed_avg|num(0) }} kcal al giorno · {{ trend.logged_days }} giorni registrati</span>{% endif %}
+  </div>
+  <p class="resto" data-test="week-text">{{ trend.text }}</p>
+</section>
+
 <section class="pasti-giorno">
   <h2>Pasti</h2>
   {% if meals %}
@@ -58,4 +66,13 @@
   <p class="hint" data-test="empty">Nessun pasto registrato{{ " oggi" if day == today else "" }}.</p>
   {% endif %}
   <div class="btns"><a class="btn" href="/pasti/nuovo?giorno={{ day.isoformat() }}">Aggiungi un pasto</a></div>
+
+  {% if workouts %}
+  <h2>Attività</h2>
+  <ul class="elenco" data-test="day-workouts">
+  {% for w in workouts %}
+    <li><a href="/attivita"><span class="nome">{{ met[w.activity].label if w.activity in met else w.activity }} <small>{{ w.duration_min|num(0) }} min</small></span><span class="mono">+{{ w.kcal_burned|num(0) }} kcal</span></a></li>
+  {% endfor %}
+  </ul>
+  {% endif %}
 </section>
