@@ -28,8 +28,8 @@ echo "account $ACCOUNT, region $REGION, bucket $BUCKET, domain $DOMAIN"
 # --- key pair ---------------------------------------------------------------
 if ! aws ec2 describe-key-pairs --key-names $NAME >/dev/null 2>&1; then
   mkdir -p "$HOME/.ssh"
-  aws ec2 create-key-pair --key-name $NAME --key-type ed25519 --query KeyMaterial --output text > "$KEY_FILE"
-  chmod 600 "$KEY_FILE"
+  aws ec2 create-key-pair --key-name $NAME --key-type ed25519 --query KeyMaterial --output text | tr -d '\r' > "$KEY_FILE"
+  chmod 600 "$KEY_FILE"   # tr: on Windows the CLI writes CRLF, which OpenSSH rejects
   echo "key pair created: $KEY_FILE"
 else
   echo "key pair exists ($KEY_FILE must be the matching private key)"
