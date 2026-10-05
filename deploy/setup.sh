@@ -6,7 +6,7 @@
 set -euo pipefail
 
 DOMAIN="${1:?domain}"
-EMAIL="${2:?email for Let's Encrypt}"
+EMAIL="${2:?email for the certificate}"
 ROOT=/srv/mealtrack
 APP=$ROOT/app
 DATA=$ROOT/data
