@@ -97,6 +97,38 @@ def test_generate_plan_and_confirm_a_meal(client, db, user, plan_foods):
     assert client.post("/piano/conferma", data={"giorno": "2020-01-01", "pasto": "cena"}, follow_redirects=False).status_code == 404
 
 
+def test_scheme_intermittent_fasting_and_presets(client, db, user, plan_foods):
+    from app.models import MealPreset
+
+    page = client.get("/piano").text
+    assert 'data-test="scheme"' in page and "Digiuno intermittente 16:8" in page
+
+    r = client.post("/piano/schema", data={"scheme": "if168_mattina", "weekend_out": "1"}, follow_redirects=False)
+    assert r.status_code == 303 and r.headers["location"] == "/piano"
+    sched = schedule_for(db, user)
+    assert [(s.meal_type, s.time, s.share) for s in sched[0]] == [("colazione", "07:30", 0.30), ("pranzo", "13:30", 0.45), ("spezzafame", "15:30", 0.25)]
+    assert [s.meal_type for s in sched[4]] == ["colazione", "pranzo"] and sched[4][1].share == 0.25
+    assert [s.meal_type for s in sched[6]] == ["colazione", "pranzo"] and sched[6][1].share == 0.70
+    assert "cena" not in {s.meal_type for d in sched.values() for s in d}
+
+    # The plan was generated and its dishes became presets, once each.
+    plan = db.scalar(select(MealPlan).where(MealPlan.user_id == user.id))
+    dishes = {i.dish for i in plan.items}
+    presets = db.scalars(select(MealPreset).where(MealPreset.user_id == user.id)).all()
+    assert {p.name for p in presets} == dishes and len(presets) == len(dishes)
+    assert all(p.items for p in presets)
+    client.post("/piano/rigenera")
+    assert db.scalar(select(func.count()).select_from(MealPreset)) == len(presets)
+    assert 'data-test="presets"' in client.get("/preset").text
+
+    # Evening window: no breakfast, dinner planned; weekend rule keeps no breakfast.
+    client.post("/piano/schema", data={"scheme": "if168_sera", "weekend_out": "1"})
+    sched = schedule_for(db, user)
+    assert [s.meal_type for s in sched[1]] == ["pranzo", "spezzafame", "cena"]
+    assert [s.meal_type for s in sched[5]] == ["pranzo"] and sched[5][0].share == pytest.approx(0.55)
+    assert client.post("/piano/schema", data={"scheme": "boh"}, follow_redirects=False).status_code == 404
+
+
 def test_stale_plan_hint(client, db, user, plan_foods):
     client.post("/orari", data=AUTHOR)
     client.post("/piano/rigenera")

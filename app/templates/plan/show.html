@@ -5,11 +5,20 @@
 <h1>Due settimane</h1>
 <p class="hint">Il piano nasce dai tuoi <a href="/orari">orari</a>, dalle tue <a href="/preferenze">preferenze</a> e dal target del profilo{% if targets %} ({{ targets.kcal|num(0) }} kcal, {{ targets.protein_g|num(0) }} g di proteine al giorno){% endif %}. Le quantità sono in grammi; i pasti compaiono nel bilancio del giorno come suggerimento da confermare con un tocco.</p>
 
-<div class="btns">
-  <form method="post" action="/piano/rigenera"><button class="btn" type="submit">{{ "Rigenera il piano" if plan else "Genera il piano" }}</button></form>
-  <a class="btn ghost" href="/orari">Orari</a>
-  <a class="btn ghost" href="/preferenze">Preferenze</a>
-</div>
+<form method="post" action="/piano/schema" class="schema" data-test="scheme">
+  <h2>Schema dei pasti</h2>
+  {% for key, s in schemes.items() %}
+  <label class="radio"><input type="radio" name="scheme" value="{{ key }}"{% if key == 'if168_mattina' %} checked{% endif %}> {{ s.label }}</label>
+  {% endfor %}
+  <label class="check"><input type="checkbox" name="weekend_out" value="1" checked> Venerdì e sabato cena fuori (pranzo leggero, niente spuntino); domenica pranzo in famiglia e niente dopo</label>
+  <p class="hint">Lo schema compila gli <a href="/orari">orari</a>, che restano modificabili pasto per pasto. Ogni piatto del piano diventa anche un preset, da registrare con un tocco.</p>
+  <div class="btns">
+    <button class="btn" type="submit">{{ "Applica e rigenera il piano" if plan else "Applica e genera il piano" }}</button>
+    {% if has_schedule %}<form method="post" action="/piano/rigenera"><button class="btn ghost" type="submit">Rigenera con gli orari attuali</button></form>{% endif %}
+    <a class="btn ghost" href="/orari">Orari</a>
+    <a class="btn ghost" href="/preferenze">Preferenze</a>
+  </div>
+</form>
 
 {% if plan and days|selectattr('meals')|map(attribute='protein_g')|map('float')|list and (days|selectattr('meals')|rejectattr('protein_g', '>', plan.protein_target_g - 10)|list|length) %}
 <p class="hint" data-test="protein-note">Nei giorni segnati le proteine restano sotto il target: i piatti a base di legumi, latte o yogurt non arrivano a {{ plan.protein_target_g|num(0) }} g senza stravolgere il piatto. Aggiungi una fonte proteica (uova, pesce, pollo, yogurt greco) o abbassa i g/kg nel profilo.</p>

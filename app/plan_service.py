@@ -40,6 +40,46 @@ DEFAULT_SCHEDULE = {  # a plain four-meal day; each user then sets their own
     "cena": ("20:00", 0.30),
 }
 
+# Eating schemes the user picks when generating the plan; they fill the
+# schedule (/orari), which stays editable meal by meal.
+SCHEMES: dict[str, dict] = {
+    "libero": {
+        "label": "Quattro pasti, nessun digiuno",
+        "meals": DEFAULT_SCHEDULE,
+    },
+    "if168_mattina": {
+        "label": "Digiuno intermittente 16:8, finestra 7:30–15:30 (niente cena)",
+        "meals": {"colazione": ("07:30", 0.30), "pranzo": ("13:30", 0.45), "spezzafame": ("15:30", 0.25)},
+    },
+    "if168_sera": {
+        "label": "Digiuno intermittente 16:8, finestra 12:00–20:00 (niente colazione)",
+        "meals": {"pranzo": ("12:30", 0.40), "spezzafame": ("16:00", 0.20), "cena": ("19:30", 0.40)},
+    },
+}
+# "Weekend out": Friday and Saturday a normal breakfast and a light lunch,
+# dinner out of the plan; Sunday a family lunch and nothing after.
+WEEKEND_OUT = {
+    4: {"colazione": ("07:30", 0.30), "pranzo": ("13:30", 0.25)},
+    5: {"colazione": ("07:30", 0.30), "pranzo": ("13:30", 0.25)},
+    6: {"colazione": ("07:30", 0.30), "pranzo": ("13:30", 0.70)},
+}
+
+
+def apply_scheme(db: Session, user: User, scheme: str, weekend_out: bool = False) -> None:
+    """Replace the user's schedule with the scheme's meals for every weekday."""
+    meals = SCHEMES[scheme]["meals"]
+    for old in db.scalars(select(EatingSchedule).where(EatingSchedule.user_id == user.id)):
+        db.delete(old)
+    db.flush()  # deletes first, or the new rows hit the unique constraint
+    for dow in range(7):
+        day_meals = WEEKEND_OUT.get(dow, meals) if weekend_out else meals
+        if dow in WEEKEND_OUT and weekend_out and "colazione" not in meals:
+            # Evening scheme: no breakfast even at the weekend; the lunch share grows.
+            day_meals = {"pranzo": ("13:30", day_meals["pranzo"][1] + 0.30)}
+        for mt, (t, share) in day_meals.items():
+            db.add(EatingSchedule(user_id=user.id, day_of_week=dow, meal_type=mt, time=t, share=share))
+    db.commit()
+
 
 def _ingredient(food: Food, grams: float, role: str, unit_g: float | None) -> Ingredient:
     return Ingredient(
@@ -148,8 +188,27 @@ def generate_plan(db: Session, user: User, start: date, weeks: int = 2) -> MealP
                     grams=i.grams, kcal=i.kcal, protein_g=i.protein_g, carbs_g=i.carbs_g, fat_g=i.fat_g,
                 ))
     db.add(plan)
+    presets_from_plan(db, user, days)
     db.commit()
     return plan
+
+
+def presets_from_plan(db: Session, user: User, days: list[PlannedDay]) -> int:
+    """Every distinct planned dish becomes a preset (first occurrence's grams),
+    so it can be logged with one tap; dishes already saved are not duplicated."""
+    existing = {p.name for p in db.scalars(select(MealPreset).where(MealPreset.user_id == user.id))}
+    created = 0
+    for d in days:
+        for m in d.meals:
+            if m.dish.name in existing or not m.items:
+                continue
+            db.add(MealPreset(
+                user_id=user.id, name=m.dish.name[:120],
+                items=[MealPresetItem(food_id=i.ingredient.food_id, grams=i.grams) for i in m.items],
+            ))
+            existing.add(m.dish.name)
+            created += 1
+    return created
 
 
 def current_plan(db: Session, user: User) -> MealPlan | None:

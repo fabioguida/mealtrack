@@ -14,6 +14,8 @@ from app.deps import ProfileRequired, current_user, templates
 from app.models import MEAL_TYPES, EatingSchedule, Food, FoodPreference, Meal, MealItem, User
 from app.plan_service import (
     CATEGORIES,
+    SCHEMES,
+    apply_scheme,
     current_plan,
     generate_plan,
     plan_days,
@@ -46,8 +48,26 @@ def piano(request: Request, db: Session = Depends(get_db), user: User = Depends(
             "targets": targets_for(db, user, date.today()),
             "skipped": skipped,
             "today": date.today(),
+            "schemes": SCHEMES,
+            "has_schedule": db.scalar(select(EatingSchedule).where(EatingSchedule.user_id == user.id)) is not None,
         },
     )
+
+
+@router.post("/piano/schema")
+def schema(
+    scheme: Annotated[str, Form()],
+    weekend_out: Annotated[str | None, Form()] = None,
+    db: Session = Depends(get_db),
+    user: User = Depends(current_user),
+):
+    """Pick an eating scheme (e.g. intermittent fasting), then generate the plan."""
+    if scheme not in SCHEMES:
+        raise HTTPException(404)
+    apply_scheme(db, user, scheme, weekend_out=bool(weekend_out))
+    if generate_plan(db, user, date.today(), weeks=2) is None:
+        raise ProfileRequired()
+    return RedirectResponse("/piano", status_code=303)
 
 
 @router.post("/piano/rigenera")
@@ -136,6 +156,7 @@ async def salva_orari(request: Request, db: Session = Depends(get_db), user: Use
         )
     for old in db.scalars(select(EatingSchedule).where(EatingSchedule.user_id == user.id)):
         db.delete(old)
+    db.flush()  # deletes first, or the new rows hit the unique constraint
     db.add_all(rows)
     db.commit()
     return RedirectResponse("/piano", status_code=303)

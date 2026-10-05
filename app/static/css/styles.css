@@ -128,6 +128,11 @@ input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px;bord
 .chip:hover{background:var(--accent);border-color:var(--accent);color:var(--text)}
 
 /* meal plan */
+.schema{background:var(--white);border:1px solid var(--line);padding:16px;margin-top:8px}
+.schema h2{margin:0 0 10px;font-size:20px}
+.schema .radio,.schema .check{display:flex;align-items:center;gap:10px;margin:0 0 8px;font-size:15px;color:var(--text)}
+.schema .radio input,.schema .check input{width:auto;min-height:0;margin:0}
+.schema .btns{margin-top:16px}
 .piano{display:grid;gap:16px;margin-top:16px}
 .giorno-piano{background:var(--white);border:1px solid var(--line);padding:14px 16px}
 .giorno-piano.oggi{border-color:var(--accent);box-shadow:inset 4px 0 0 var(--accent)}
