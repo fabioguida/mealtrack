@@ -1,0 +1,6 @@
+# Text files are LF in the repository and in archives (the server is Linux).
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.woff2 binary
+*.task binary
