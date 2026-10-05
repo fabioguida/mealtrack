@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from app.db import get_db
 from app.deps import current_user, templates
 from app.models import User, Weight
+from app.phrases import phrase
 
 router = APIRouter(prefix="/peso")
 
@@ -34,8 +35,35 @@ def chart_points(rows: list[Weight], end: date) -> dict | None:
         "lo": lo, "hi": hi,
         "polyline": " ".join(f"{x(d):.1f},{y(k):.1f}" for d, k in pts),
         "points": [(f"{x(d):.1f}", f"{y(k):.1f}", d, k) for d, k in pts],
+        # The first and the last point carry their value, so the chart reads without hovering.
+        "first": (f"{x(pts[0][0]):.1f}", f"{y(pts[0][1]):.1f}", pts[0][1]),
+        "last": (f"{x(pts[-1][0]):.1f}", f"{y(pts[-1][1]):.1f}", pts[-1][1]),
         "start": start, "end": end,
     }
+
+
+FLAT_KG = 0.3       # within this of the first weigh-in counts as "stabile"
+STALE_DAYS = 7      # no weigh-in for this long → the mascot nods off
+
+
+def weight_summary(rows: list[Weight], today: date, user: User) -> dict:
+    """The sentence and the mascot above the chart: delta from the first weigh-in,
+    said as a line from data/email_phrases_it.json (rows newest first)."""
+    seed = f"{today}:{user.id}"
+    if not rows:
+        return {"mascot": "sleepy", "line": phrase("weight_none", seed), "delta": None, "first": None, "last": None}
+    first, last = rows[-1], rows[0]
+    delta = last.kg - first.kg
+    stale = (today - last.date).days
+    if stale >= STALE_DAYS:
+        mascot, line = "sleepy", phrase("weight_stale", seed, days=stale)
+    elif delta <= -FLAT_KG:
+        mascot, line = ("party" if -delta >= 5 else "happy"), phrase("weight_down", seed, kg=f"{-delta:.1f}")
+    elif delta >= FLAT_KG:
+        mascot, line = "sweaty", phrase("weight_up", seed, kg=f"{delta:.1f}")
+    else:
+        mascot, line = "happy", phrase("weight_flat", seed)
+    return {"mascot": mascot, "line": line, "delta": delta, "first": first, "last": last, "stale": stale}
 
 
 def _page(request, db, user, errors, form=None):
@@ -48,6 +76,7 @@ def _page(request, db, user, errors, form=None):
         {
             "rows": rows[:60],
             "chart": chart_points(list(reversed(rows)), date.today()),
+            "summary": weight_summary(rows, date.today(), user),
             "errors": errors,
             "form": form or {"date": date.today().isoformat(), "kg": ""},
         },

@@ -20,8 +20,9 @@ from sqlalchemy.orm import Session
 from app import config
 from app.deps import templates
 from app.models import EmailLog, NotificationSettings, User
+from app.mood import first_name, mascot_for, milestone_lines, opening_line
 from app.phrases import phrase
-from app.progress import ProgressSummary, progress_for
+from app.progress import progress_for
 from app.shopping import shopping_list
 
 COMEBACK_AFTER_DAYS = 2
@@ -95,41 +96,6 @@ def get_backend():
 def settings_for(db: Session, user: User) -> NotificationSettings:
     row = db.get(NotificationSettings, user.id)
     return row or NotificationSettings(user_id=user.id, daily_shopping=True, weekly_shopping=True, progress=True, weekly_only=False)
-
-
-# --- the human lines -------------------------------------------------------------
-
-def first_name(user: User) -> str:
-    return user.email.split("@")[0].split(".")[0].capitalize()
-
-
-def opening_line(user: User, p: ProgressSummary | None, day: date) -> str:
-    if p is None:
-        return ""
-    t = p.today
-    values = {"name": first_name(user), "streak": p.streak, "days": p.days_since_log}
-    if t.eaten_kcal is not None:
-        values["over"] = int(round(max(0.0, t.eaten_kcal - t.allowed_kcal)))
-        values["left"] = int(round(max(0.0, t.allowed_kcal - t.eaten_kcal)))
-    return phrase(p.situation, f"{day}:{user.id}", **values)
-
-
-def milestone_lines(user: User, p: ProgressSummary | None, day: date) -> list[str]:
-    if p is None:
-        return []
-    kg = (p.first_weight[1] - p.weights[-1][1]) if (p.first_weight and p.weights) else 0.0
-    return [l for l in (phrase(m, f"{day}:{user.id}", name=first_name(user), streak=p.streak, kg=f"{kg:.1f}") for m in p.milestones) if l]
-
-
-MASCOTS = {"on_target": "happy", "under": "happy", "over": "sweaty", "no_log": "sleepy"}
-
-
-def mascot_for(p: ProgressSummary | None, milestones: list[str]) -> str | None:
-    """The plate-face at the top of the mail (static/img/email/face-*.png): party on a
-    milestone, otherwise it follows today's situation; none without a progress."""
-    if p is None:
-        return None
-    return "party" if milestones else MASCOTS[p.situation]
 
 
 # --- composition -----------------------------------------------------------------

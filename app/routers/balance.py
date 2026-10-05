@@ -11,6 +11,8 @@ from app.calc.trend import weekly_trend
 from app.db import get_db
 from app.deps import ProfileRequired, current_user, templates
 from app.models import User
+from app.mood import mood_for
+from app.phrases import phrase
 from app.plan_service import suggestions_for
 from app.routers.presets import user_presets
 from app.services import day_meals, day_workouts, meals_totals, targets_for, week_days
@@ -25,9 +27,13 @@ def _render(request: Request, db: Session, user: User, day: date):
     meals = day_meals(db, user, day)
     workouts = day_workouts(db, user, day)
     extra = sum(w.kcal_burned for w in workouts)
+    today = date.today()
     ctx = {
+        # The mascot, the line and the milestones belong to today; other days just show the numbers.
+        "mood": mood_for(db, user, day) if day == today else None,
+        "empty_line": phrase("empty_today" if day == today else "empty_past", f"{day}:{user.id}"),
         "day": day,
-        "today": date.today(),
+        "today": today,
         "prev_day": day - timedelta(days=1),
         "next_day": day + timedelta(days=1),
         "meals": meals,

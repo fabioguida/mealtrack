@@ -8,16 +8,31 @@
   <a class="next" href="/giorno/{{ next_day.isoformat() }}" hx-get="/giorno/{{ next_day.isoformat() }}" hx-target="#bilancio" hx-push-url="true" aria-label="Giorno successivo">›</a>
 </nav>
 
+{% if mood %}
+<section class="umore {{ mood.situation }}" data-test="mood" data-mascot="{{ mood.mascot }}">
+  <img class="mascotte" src="/static/img/email/face-{{ mood.mascot }}.png" width="72" height="72" alt="">
+  <div class="parole">
+    {% if mood.line %}<p class="frase">{{ mood.line }}</p>{% endif %}
+    {% if mood.show_streak %}<p class="serie" data-test="streak">🔥 <b>{{ mood.streak }}</b> giorni di fila</p>{% endif %}
+  </div>
+  {% if mood.celebrate %}
+  <div class="coriandoli" data-celebrate="{{ day.isoformat() }}" aria-hidden="true">{% for i in range(14) %}<i></i>{% endfor %}</div>
+  {% endif %}
+</section>
+{% for m in mood.milestones %}<p class="traguardo" data-test="milestone">★ {{ m }}</p>{% endfor %}
+{% endif %}
+
 {% set b = balance %}
+{% set centrato = b.kcal.value > 0 and b.kcal.target * 0.95 <= b.kcal.value <= b.kcal.target * 1.05 %}
 <section class="barre">
-  <div class="barra grande {{ 'over' if b.kcal.over else 'ok' }}" data-test="kcal-bar">
+  <div class="barra grande {{ 'over' if b.kcal.over else ('centrata' if centrato else 'ok') }}" data-test="kcal-bar">
     <div class="testa">
       <span class="nome">Calorie</span>
       <span class="valore"><b data-test="kcal">{{ b.kcal.value|num(0) }}</b> / {{ b.kcal.target|num(0) }} kcal</span>
     </div>
     <div class="traccia"><div class="riempimento" style="width:{{ b.kcal.percent }}%"></div></div>
     <p class="resto" data-test="kcal-rest">
-      {% if b.kcal.over %}{{ (-b.kcal.remaining)|num(0) }} kcal oltre il target{% else %}rimangono {{ b.kcal.remaining|num(0) }} kcal{% endif %}{% if activity_kcal %} <span class="mono" data-test="activity">(target {{ targets.kcal|num(0) }} + {{ activity_kcal|num(0) }} di attività)</span>{% endif %}
+      {% if b.kcal.over %}{{ (-b.kcal.remaining)|num(0) }} kcal oltre il target{% elif centrato %}<span class="spunta">✓ centrato</span> rimangono {{ b.kcal.remaining|num(0) }} kcal{% else %}rimangono {{ b.kcal.remaining|num(0) }} kcal{% endif %}{% if activity_kcal %} <span class="mono" data-test="activity">(target {{ targets.kcal|num(0) }} + {{ activity_kcal|num(0) }} di attività)</span>{% endif %}
     </p>
   </div>
 
@@ -27,7 +42,7 @@
       <span class="valore"><b data-test="protein">{{ b.protein.value|num(0) }}</b> / {{ b.protein.target|num(0) }} g</span>
     </div>
     <div class="traccia"><div class="riempimento" style="width:{{ b.protein.percent }}%"></div></div>
-    <p class="resto">{% if b.protein.remaining > 0 %}mancano {{ b.protein.remaining|num(0) }} g{% else %}target raggiunto{% endif %}</p>
+    <p class="resto">{% if b.protein.remaining > 0 %}mancano {{ b.protein.remaining|num(0) }} g{% else %}<span class="spunta">✓ target raggiunto</span>{% endif %}</p>
   </div>
 
   <div class="piccole">
@@ -44,7 +59,7 @@
 
 <section class="settimana {{ trend.verdict }}" data-test="trend">
   <div class="testa">
-    <span class="nome">Ultimi 7 giorni</span>
+    <span class="nome">📈 Ultimi 7 giorni</span>
     {% if trend.verdict != 'pochi_dati' %}<span class="valore"><b data-test="week-avg">{{ trend.eaten_avg|num(0) }}</b> / {{ trend.allowed_avg|num(0) }} kcal al giorno · {{ trend.logged_days }} giorni registrati</span>{% endif %}
   </div>
   <p class="resto" data-test="week-text">{{ trend.text }}</p>
@@ -53,12 +68,16 @@
 <section class="pasti-giorno">
   {% if suggestions %}
   <h2>Dal piano</h2>
-  <ul class="elenco suggerimenti" data-test="suggestions">
+  <ul class="carte" data-test="suggestions">
   {% for s in suggestions %}
-    <li>
-      <span class="nome">{{ s.meal_type|capitalize }}: {{ s.dish }} <small>{% for i in s['items'] %}{{ i.food.label|truncate(30, true, '…') }} {{ i.grams|num }} g{% if not loop.last %} · {% endif %}{% endfor %}</small></span>
-      <span class="mono">{{ s.kcal|num(0) }} kcal · P {{ s.protein_g|num(0) }} g</span>
-      <form method="post" action="/piano/conferma"><input type="hidden" name="giorno" value="{{ day.isoformat() }}"><input type="hidden" name="pasto" value="{{ s.meal_type }}"><button type="submit" class="btn" style="padding:10px 14px;min-height:44px;font-size:14px">Conferma</button></form>
+    <li class="carta">
+      <p class="eyebrow">{{ s.meal_type|capitalize }}</p>
+      <h3>{{ s.dish }}</h3>
+      <p class="ingredienti">{% for i in s['items'] %}{{ i.food.label|truncate(30, true, '…') }} {{ i.grams|num }} g{% if not loop.last %} · {% endif %}{% endfor %}</p>
+      <div class="piede">
+        <span class="mono">{{ s.kcal|num(0) }} kcal · P {{ s.protein_g|num(0) }} g</span>
+        <form method="post" action="/piano/conferma"><input type="hidden" name="giorno" value="{{ day.isoformat() }}"><input type="hidden" name="pasto" value="{{ s.meal_type }}"><button type="submit" class="btn">Conferma</button></form>
+      </div>
     </li>
   {% endfor %}
   </ul>
@@ -76,7 +95,10 @@
   {% endfor %}
   </ul>
   {% else %}
-  <p class="hint" data-test="empty">Nessun pasto registrato{{ " oggi" if day == today else "" }}.</p>
+  <div class="vuoto" data-test="empty">
+    <img src="/static/img/email/plate.png" width="56" height="56" alt="">
+    <div><p class="frase">{{ empty_line }}</p><p class="hint">Nessun pasto registrato{{ " oggi" if day == today else "" }}.</p></div>
+  </div>
   {% endif %}
   <div class="btns"><a class="btn" href="/pasti/nuovo?giorno={{ day.isoformat() }}">Aggiungi un pasto</a></div>
   {% if presets %}

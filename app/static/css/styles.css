@@ -224,3 +224,57 @@ footer.wrap{padding:24px 0 40px;border-top:1px solid var(--line);color:var(--mut
 footer p{margin:0}
 footer .fonte{margin-top:6px;font-size:11px}
 footer .fonte a{border-bottom:1px solid var(--line)}
+
+/* mood: the mascot, the line of the day, the streak, milestones, confetti */
+.umore{position:relative;display:flex;align-items:center;gap:16px;padding:14px 16px;margin-bottom:18px;background:var(--white);border:1px solid var(--line);border-left:4px solid var(--navy);overflow:hidden}
+.umore.on_target,.umore.under{border-left-color:var(--ok)}
+.umore.over{border-left-color:var(--over)}
+.umore.no_log{border-left-color:var(--line)}
+.umore .mascotte{flex-shrink:0;width:72px;height:72px;animation:saluta .8s ease-out}
+.umore .parole{flex:1;min-width:0}
+.umore .frase{margin:0;font-size:17px;line-height:1.35;color:var(--text);text-wrap:pretty}
+.umore .numero{margin:0 0 4px;font-size:15px;color:var(--muted)}
+.umore .numero b{font-family:var(--display);font-stretch:118%;font-weight:700;font-size:34px;line-height:1;color:var(--navy);margin-right:2px;font-variant-numeric:tabular-nums}
+.umore .numero .mono{display:block;margin-top:4px}
+.serie{margin:8px 0 0;display:inline-block;font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--navy);background:#FFF7D6;border:1px solid var(--accent);border-radius:999px;padding:4px 10px}
+.serie b{font-size:14px}
+.traguardo{margin:0 0 12px;padding:10px 14px;background:#FFF7D6;border-left:3px solid var(--accent);font-weight:600;color:var(--navy);animation:appari .5s ease-out both}
+@keyframes saluta{0%{transform:rotate(-8deg) scale(.9)}50%{transform:rotate(6deg) scale(1.04)}100%{transform:none}}
+@keyframes appari{from{opacity:0;transform:translateY(6px)}}
+.coriandoli{position:absolute;inset:0;pointer-events:none}
+.coriandoli i{position:absolute;top:-10px;width:8px;height:12px;border-radius:1px;opacity:0;animation:cadi 1.8s ease-in forwards}
+.coriandoli i:nth-child(4n+1){background:var(--accent)}.coriandoli i:nth-child(4n+2){background:var(--ok)}.coriandoli i:nth-child(4n+3){background:var(--over)}.coriandoli i:nth-child(4n){background:var(--navy)}
+.coriandoli i:nth-child(1){left:4%;animation-delay:.0s}.coriandoli i:nth-child(2){left:11%;animation-delay:.3s}.coriandoli i:nth-child(3){left:18%;animation-delay:.1s}.coriandoli i:nth-child(4){left:26%;animation-delay:.5s}
+.coriandoli i:nth-child(5){left:33%;animation-delay:.2s}.coriandoli i:nth-child(6){left:41%;animation-delay:.6s}.coriandoli i:nth-child(7){left:48%;animation-delay:.05s}.coriandoli i:nth-child(8){left:56%;animation-delay:.4s}
+.coriandoli i:nth-child(9){left:63%;animation-delay:.25s}.coriandoli i:nth-child(10){left:71%;animation-delay:.55s}.coriandoli i:nth-child(11){left:78%;animation-delay:.15s}.coriandoli i:nth-child(12){left:86%;animation-delay:.45s}
+.coriandoli i:nth-child(13){left:93%;animation-delay:.35s}.coriandoli i:nth-child(14){left:97%;animation-delay:.7s}
+@keyframes cadi{0%{opacity:1;transform:translateY(0) rotate(0)}100%{opacity:0;transform:translateY(120px) rotate(540deg)}}
+.coriandoli.fatto{display:none}
+@media (prefers-reduced-motion:reduce){.umore .mascotte,.traguardo,.riempimento{animation:none}.coriandoli{display:none}}
+
+/* bars that come alive */
+@keyframes cresci{from{width:0}}
+.riempimento{animation:cresci .7s cubic-bezier(.2,.7,.2,1)}
+.barra.centrata .riempimento{background:var(--accent)}
+.barra.centrata .valore b{color:#8A6D00}
+.spunta{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#1F5A38;background:#EAF5EE;border-radius:999px;padding:3px 9px;margin-right:6px;vertical-align:middle}
+
+/* the empty plate */
+.vuoto{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--white);border:1px dashed var(--line)}
+.vuoto img{flex-shrink:0;opacity:.9}
+.vuoto .frase{margin:0;font-size:16px}
+.vuoto .hint{margin:2px 0 0;font-size:13px}
+
+/* plan suggestions as cards */
+.carte{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.carta{display:flex;flex-direction:column;gap:6px;padding:16px;background:var(--white);border:1px solid var(--line);border-top:4px solid var(--accent)}
+.carta .eyebrow{margin:0}
+.carta h3{font-size:22px;color:var(--navy)}
+.carta .ingredienti{margin:0;font-size:13px;color:var(--muted);flex:1}
+.carta .piede{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:6px}
+.carta .piede form{margin:0}
+.carta .piede .btn{padding:10px 14px;min-height:44px;font-size:14px}
+
+/* weight chart: first and last value */
+.grafico .valore-punto{font-family:var(--mono);font-size:12px;font-weight:500;fill:var(--navy)}
+.umore.peso{border-left-color:var(--accent)}

@@ -36,17 +36,63 @@
   "goodbye": [
     "Un mese di silenzio: smetto di scriverti, non di aspettarti. Quando vuoi, l'app è dove l'hai lasciata e le email ripartono con il primo pasto registrato."
   ],
-  "streak_3": ["Tre giorni di fila. Il più difficile è iniziare, e l'hai già fatto."],
-  "streak_7": ["Sette giorni di fila. Questo è un comportamento da persona che sa cosa sta facendo.", "Una settimana intera registrata. Ora il grafico ha qualcosa da raccontare."],
-  "streak_14": ["Quattordici giorni di fila: due settimane senza buchi. Statisticamente, è un'abitudine."],
-  "streak_30": ["Trenta giorni di fila. A questo punto non è più l'app che ti aiuta: sei tu che aiuti l'app."],
-  "weight_1": ["Primo chilo in meno dalla prima pesata. Un pacco di zucchero che non porti più in giro."],
-  "weight_2": ["Due chili in meno dalla prima pesata. La cintura comincia a notarlo."],
-  "weight_5": ["Cinque chili in meno dalla prima pesata. Questo non è un buon periodo: è un risultato."],
-  "week_in_line": ["Settimana intera registrata e in linea con il target. È così che si fa, e l'hai fatto."],
+  "streak_3": [
+    "Tre giorni di fila. Il più difficile è iniziare, e l'hai già fatto."
+  ],
+  "streak_7": [
+    "Sette giorni di fila. Questo è un comportamento da persona che sa cosa sta facendo.",
+    "Una settimana intera registrata. Ora il grafico ha qualcosa da raccontare."
+  ],
+  "streak_14": [
+    "Quattordici giorni di fila: due settimane senza buchi. Statisticamente, è un'abitudine."
+  ],
+  "streak_30": [
+    "Trenta giorni di fila. A questo punto non è più l'app che ti aiuta: sei tu che aiuti l'app."
+  ],
+  "weight_1": [
+    "Primo chilo in meno dalla prima pesata. Un pacco di zucchero che non porti più in giro."
+  ],
+  "weight_2": [
+    "Due chili in meno dalla prima pesata. La cintura comincia a notarlo."
+  ],
+  "weight_5": [
+    "Cinque chili in meno dalla prima pesata. Questo non è un buon periodo: è un risultato."
+  ],
+  "week_in_line": [
+    "Settimana intera registrata e in linea con il target. È così che si fa, e l'hai fatto."
+  ],
   "weekly_open": [
     "Weekend: si pianifica la spesa, così la settimana si cucina da sola.",
     "Sabato, lista in mano: comprare quello che è nel piano è metà del lavoro.",
     "Ecco la spesa della settimana. Il resto lo fanno le abitudini."
+  ],
+  "empty_today": [
+    "Il piatto è ancora vuoto. Un tocco su un preset e si riempie.",
+    "Oggi non hai ancora registrato niente. Il frigo ti guarda con speranza.",
+    "Pagina bianca, per ora. Anche un caffè conta: scrivilo e il resto segue."
+  ],
+  "empty_past": [
+    "Giornata senza registrazioni. Capita; la media dei sette giorni perdona.",
+    "Qui non c'è scritto niente. Se ricordi cosa hai mangiato, puoi ancora aggiungerlo."
+  ],
+  "weight_down": [
+    "{kg} kg in meno dalla prima pesata. La bilancia sta prendendo appunti.",
+    "Meno {kg} kg da quando hai cominciato. Non è magia, è la media che lavora.",
+    "{kg} kg in meno. Vai avanti così e la cintura chiederà un buco nuovo."
+  ],
+  "weight_flat": [
+    "Peso stabile dalla prima pesata. Il corpo sta decidendo; tu continua a registrare.",
+    "Stessa cifra di quando hai cominciato, più o meno. Guarda la settimana, non il giorno."
+  ],
+  "weight_up": [
+    "{kg} kg in più dalla prima pesata. Niente panico: acqua, sale e orari spostano un chilo in un giorno.",
+    "Più {kg} kg dall'inizio. La linea conta più del punto: pesati la mattina, stesse condizioni."
+  ],
+  "weight_stale": [
+    "Sono {days} giorni che la bilancia non ti vede. Non morde: domattina, prima di colazione.",
+    "Ultima pesata {days} giorni fa. Una al mattino, un paio di volte a settimana, e il grafico racconta."
+  ],
+  "weight_none": [
+    "Nessuna pesata ancora. Una al mattino, prima di colazione, e il grafico parte."
   ]
 }

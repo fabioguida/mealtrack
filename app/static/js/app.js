@@ -63,4 +63,16 @@
     var msg = e.target.getAttribute('data-confirm');
     if (msg && !window.confirm(msg)) e.preventDefault();
   });
+  // Confetti on a milestone: once per day per browser, not on every visit.
+  function confettiOnce(root) {
+    var c = (root || document).querySelector('.coriandoli[data-celebrate]');
+    if (!c) return;
+    var key = 'coriandoli:' + c.getAttribute('data-celebrate');
+    try {
+      if (window.sessionStorage.getItem(key)) c.classList.add('fatto');
+      else window.sessionStorage.setItem(key, '1');
+    } catch (e) { /* private mode: just show them */ }
+  }
+  confettiOnce(document);
+  document.addEventListener('htmx:afterSwap', function (e) { confettiOnce(e.detail.target); });
 })();

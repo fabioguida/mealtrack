@@ -5,6 +5,16 @@
 <h1>Peso</h1>
 {% if errors %}<ul class="errors" data-test="errors">{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
 
+<section class="umore peso" data-test="weight-summary" data-mascot="{{ summary.mascot }}">
+  <img class="mascotte" src="/static/img/email/face-{{ summary.mascot }}.png" width="72" height="72" alt="">
+  <div class="parole">
+    {% if summary.delta is not none %}
+    <p class="numero"><b data-test="weight-delta">{{ '%+.1f'|format(summary.delta) }}</b> kg <span class="mono">dalla prima pesata ({{ summary.first.date|d }}, {{ summary.first.kg|num(1) }} kg) · ultima {{ summary.last.date|d }}, {{ summary.last.kg|num(1) }} kg</span></p>
+    {% endif %}
+    <p class="frase">{{ summary.line }}</p>
+  </div>
+</section>
+
 <form method="post" action="/peso" class="riga-form">
   <label>Data <input type="date" name="day" value="{{ form.date }}" required></label>
   <label>Peso (kg) <input type="number" name="kg" value="{{ form.kg }}" min="25" max="300" step="0.1" inputmode="decimal" required autofocus></label>
@@ -23,6 +33,8 @@
     <text x="{{ chart.w - chart.pad }}" y="{{ chart.h - 8 }}" class="etichetta" text-anchor="end">{{ chart.end|d }}</text>
     <polyline points="{{ chart.polyline }}" class="linea"/>
     {% for x, y, d, k in chart.points %}<circle cx="{{ x }}" cy="{{ y }}" r="3.5" class="punto"><title>{{ d|d }}: {{ k|num(1) }} kg</title></circle>{% endfor %}
+    <text x="{{ chart.first[0] }}" y="{{ chart.first[1]|float - 10 }}" class="valore-punto">{{ chart.first[2]|num(1) }}</text>
+    <text x="{{ chart.last[0] }}" y="{{ chart.last[1]|float - 10 }}" class="valore-punto" text-anchor="end">{{ chart.last[2]|num(1) }}</text>
   </svg>
   <figcaption class="mono">Ultimi 90 giorni</figcaption>
 </figure>
