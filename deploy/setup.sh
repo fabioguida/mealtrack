@@ -27,8 +27,12 @@ systemctl daemon-reload
 systemctl enable mealtrack
 systemctl restart mealtrack
 
-# nginx site (plain HTTP first, so certbot can answer the challenge)
-sed "s/__DOMAIN__/$DOMAIN/g" $APP/deploy/nginx.conf > /etc/nginx/sites-available/mealtrack
+# nginx site (plain HTTP first, so certbot can answer the challenge). Written only
+# once: certbot edits this file to add the HTTPS block, so rewriting it on a
+# re-run would silently take HTTPS down (it did, 2026-10-05).
+if [ ! -f /etc/nginx/sites-available/mealtrack ]; then
+  sed "s/__DOMAIN__/$DOMAIN/g" $APP/deploy/nginx.conf > /etc/nginx/sites-available/mealtrack
+fi
 ln -sf /etc/nginx/sites-available/mealtrack /etc/nginx/sites-enabled/mealtrack
 rm -f /etc/nginx/sites-enabled/default
 nginx -t && systemctl reload nginx
@@ -36,6 +40,8 @@ nginx -t && systemctl reload nginx
 # HTTPS (certbot edits the nginx site, adds the redirect and the renewal timer)
 if [ ! -d /etc/letsencrypt/live/$DOMAIN ]; then
   certbot --nginx --non-interactive --agree-tos -m "$EMAIL" -d "$DOMAIN" --redirect
+elif ! grep -q "listen 443" /etc/nginx/sites-available/mealtrack; then
+  certbot install --nginx --cert-name "$DOMAIN" --redirect --non-interactive
 fi
 
 # Italian clock for cron (emails at 18:00 and Saturday 08:00 local time)
