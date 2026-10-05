@@ -72,6 +72,8 @@ class NotificationSettings(Base):
     daily_shopping: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     weekly_shopping: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     progress: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    # One digest on Saturday instead of the daily mail.
+    weekly_only: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="0")
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=func.now(), onupdate=func.now()
     )

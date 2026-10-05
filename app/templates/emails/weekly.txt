@@ -1,4 +1,8 @@
-{% if groups %}SPESA DELLA SETTIMANA, da {{ monday|d }} a {{ sunday|d }}
+{% if line %}{{ line }}
+
+{% endif %}{% for m in milestones %}★ {{ m }}
+{% endfor %}{% if milestones %}
+{% endif %}{% if groups %}🛒 SPESA DELLA SETTIMANA, da {{ monday|d }} a {{ sunday|d }}
 
 {% include "emails/_shopping.txt" %}
 {% else %}Per la settimana da {{ monday|d }} non c'è un piano: generalo nell'app per avere la lista.

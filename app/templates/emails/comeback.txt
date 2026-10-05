@@ -1,0 +1,6 @@
+👋 {{ line }}
+
+{% if tomorrow_meals and not goodbye %}🍽 DOMANI NEL PIANO ({{ tomorrow|d }})
+{% for m in tomorrow_meals %}  {{ m.meal_type|capitalize }}: {{ m.dish }} ({{ m.kcal|num(0) }} kcal)
+{% endfor %}
+{% endif %}Per ripartire basta un tocco: {{ app_url }}/ — gestisci le email: {{ app_url }}/notifiche

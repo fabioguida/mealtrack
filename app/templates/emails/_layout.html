@@ -2,8 +2,13 @@
 <html lang="it"><head><meta charset="utf-8"><title>{{ title }}</title></head>
 <body style="margin:0;background:#F4F6F8;font-family:'Instrument Sans',Arial,sans-serif;color:#0F1C2A;font-size:16px;line-height:1.5">
 <div style="max-width:560px;margin:0 auto;padding:24px 16px">
-  <p style="margin:0 0 4px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#56646F">Meal Tracker</p>
-  <h1 style="margin:0 0 16px;font-size:26px;color:#0F2A44">{{ title }}</h1>
+  <table role="presentation" style="border-collapse:collapse;width:100%"><tr>
+    <td style="vertical-align:bottom;padding:0">
+      <p style="margin:0 0 4px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#56646F">Meal Tracker</p>
+      <h1 style="margin:0 0 16px;font-size:26px;color:#0F2A44">{{ title }}</h1>
+    </td>
+    {% if mascot %}<td style="vertical-align:bottom;text-align:right;padding:0 0 12px;width:72px"><img src="{{ app_url }}/static/img/email/face-{{ mascot }}.png" width="64" height="64" alt="" style="border:0;display:inline-block" data-mascot="{{ mascot }}"></td>{% endif %}
+  </tr></table>
   <div style="background:#fff;border:1px solid #DCE2E7;padding:16px">
   {% block body %}{% endblock %}
   </div>

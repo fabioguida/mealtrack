@@ -1,12 +1,15 @@
 {% extends "emails/_layout.html" %}
+{% import "emails/_icons.html" as ic with context %}
 {% set title = ("Spesa per domani" if groups else "Come va oggi") %}
 {% block body %}
+{% if line %}<p style="margin:0 0 12px;font-size:18px">{{ line }}</p>{% endif %}
+{% for m in milestones %}{{ ic.star(m) }}{% endfor %}
 {% if groups %}
-<p style="margin:0;color:#56646F">Per i pasti di domani, {{ tomorrow|d }}.</p>
+{{ ic.h("cart", "Spesa per domani, " ~ (tomorrow|d)) }}
 {% include "emails/_shopping.html" %}
 {% endif %}
 {% if progress and progress.tomorrow_meals %}
-<h3 style="margin:18px 0 6px;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#56646F">Domani nel piano</h3>
+{{ ic.h("plate", "Domani nel piano") }}
 <p style="margin:0">{% for m in progress.tomorrow_meals %}<b>{{ m.meal_type|capitalize }}</b>: {{ m.dish }} ({{ m.kcal|num(0) }} kcal){% if not loop.last %}<br>{% endif %}{% endfor %}</p>
 {% endif %}
 {% if progress %}{% include "emails/_progress.html" %}{% endif %}

@@ -1,12 +1,13 @@
+{% import "emails/_icons.html" as ic with context %}
 {% set t = progress.today %}
-<h3 style="margin:18px 0 6px;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#56646F">Oggi, {{ t.day|d }}</h3>
+{{ ic.h("flame", "Oggi, " ~ (t.day|d)) }}
 {% if t.eaten_kcal is not none %}
 <p style="margin:0 0 6px"><b style="font-size:22px;color:{{ '#C8322B' if t.eaten_kcal > t.allowed_kcal else '#2E8B57' }}">{{ t.eaten_kcal|num(0) }}</b> su {{ t.allowed_kcal|num(0) }} kcal
 ({{ (t.allowed_kcal - t.eaten_kcal)|num(0) }} {{ 'rimaste' if t.eaten_kcal <= t.allowed_kcal else 'oltre' }}) · proteine <b>{{ t.protein_g|num(0) }}</b> su {{ t.protein_target_g|num(0) }} g</p>
 {% else %}
 <p style="margin:0 0 6px;color:#56646F">Nessun pasto registrato oggi.</p>
 {% endif %}
-<h3 style="margin:18px 0 6px;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#56646F">Ultimi 7 giorni</h3>
+{{ ic.h("chart", "Ultimi 7 giorni") }}
 <p style="margin:0 0 8px">{{ progress.trend.text }}</p>
 <table style="border-collapse:collapse;width:100%;font-size:14px">
 {% for l in progress.lines %}
@@ -16,7 +17,7 @@
 </table>
 <p style="margin:8px 0 0;color:#56646F">Giorni di fila registrati: <b>{{ progress.streak }}</b></p>
 {% if progress.weights %}
-<h3 style="margin:18px 0 6px;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#56646F">Peso</h3>
+{{ ic.h("scale", "Peso") }}
 <p style="margin:0">{% for d, kg in progress.weights %}{{ d|d }}: <b>{{ kg|num(1) }}</b> kg{% if not loop.last %} · {% endif %}{% endfor %}
 {% if progress.weight_delta is not none %}<br>Variazione sulle ultime pesate: <b>{{ '%+.1f'|format(progress.weight_delta) }} kg</b>{% endif %}</p>
 {% endif %}

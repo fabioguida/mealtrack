@@ -1,14 +1,14 @@
-{% set t = progress.today %}OGGI ({{ t.day|d }})
+{% set t = progress.today %}🔥 OGGI ({{ t.day|d }})
 {% if t.eaten_kcal is not none %}  Calorie: {{ t.eaten_kcal|num(0) }} su {{ t.allowed_kcal|num(0) }} kcal ({{ (t.allowed_kcal - t.eaten_kcal)|num(0) }} {{ 'rimaste' if t.eaten_kcal <= t.allowed_kcal else 'oltre' }})
   Proteine: {{ t.protein_g|num(0) }} su {{ t.protein_target_g|num(0) }} g
 {% else %}  Nessun pasto registrato oggi.
 {% endif %}
-ULTIMI 7 GIORNI
+📈 ULTIMI 7 GIORNI
   {{ progress.trend.text }}
 {% for l in progress.lines %}  {{ l.day|d }}: {% if l.eaten_kcal is not none %}{{ l.eaten_kcal|num(0) }} / {{ l.allowed_kcal|num(0) }} kcal, P {{ l.protein_g|num(0) }} g{% else %}non registrato{% endif %}
 {% endfor %}  Giorni di fila registrati: {{ progress.streak }}
 {% if progress.weights %}
-PESO
+⚖ PESO
 {% for d, kg in progress.weights %}  {{ d|d }}: {{ kg|num(1) }} kg
 {% endfor %}{% if progress.weight_delta is not none %}  Variazione sulle ultime pesate: {{ '%+.1f'|format(progress.weight_delta) }} kg
 {% endif %}{% endif %}

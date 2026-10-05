@@ -1,0 +1,1 @@
+{% if goodbye %}Smetto di scriverti (per ora){% else %}Ci manchi un po'{% endif %}

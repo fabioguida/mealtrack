@@ -1,0 +1,11 @@
+{% extends "emails/_layout.html" %}
+{% import "emails/_icons.html" as ic with context %}
+{% set title = ("A presto" if goodbye else "Ci manchi un po'") %}
+{% block body %}
+<p style="margin:0 0 12px;font-size:18px"><img src="{{ app_url }}/static/img/email/wave.png" width="28" height="28" alt="" style="vertical-align:-7px;margin-right:6px;border:0">{{ line }}</p>
+{% if tomorrow_meals and not goodbye %}
+{{ ic.h("plate", "Domani nel piano, " ~ (tomorrow|d)) }}
+<p style="margin:0">{% for m in tomorrow_meals %}<b>{{ m.meal_type|capitalize }}</b>: {{ m.dish }} ({{ m.kcal|num(0) }} kcal){% if not loop.last %}<br>{% endif %}{% endfor %}</p>
+{% endif %}
+<p style="margin:18px 0 0"><a href="{{ app_url }}/" style="display:inline-block;background:#F5D35A;color:#0F1C2A;font-weight:600;padding:12px 18px;border-radius:2px;text-decoration:none">Riparti da Oggi</a></p>
+{% endblock %}

@@ -37,6 +37,7 @@ async def salva(request: Request, db: Session = Depends(get_db), user: User = De
     row.daily_shopping = bool(form.get("daily_shopping"))
     row.weekly_shopping = bool(form.get("weekly_shopping"))
     row.progress = bool(form.get("progress"))
+    row.weekly_only = bool(form.get("weekly_only"))
     db.commit()
     return RedirectResponse("/notifiche?msg=salvato", status_code=303)
 

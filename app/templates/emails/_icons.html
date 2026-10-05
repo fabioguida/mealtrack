@@ -1,0 +1,7 @@
+{# Small heading with a PNG icon in front (email clients do not render SVG). Icons: scripts/make_email_icons.py #}
+{% macro h(icon, text) -%}
+<h3 style="margin:18px 0 6px;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#56646F"><img src="{{ app_url }}/static/img/email/{{ icon }}.png" width="22" height="22" alt="" style="vertical-align:-6px;margin-right:6px;border:0">{{ text }}</h3>
+{%- endmacro %}
+{% macro star(text) -%}
+<p style="margin:0 0 8px;padding:10px 12px;background:#FFF7D6;border-left:3px solid #F5D35A"><img src="{{ app_url }}/static/img/email/star.png" width="22" height="22" alt="★" style="vertical-align:-6px;margin-right:6px;border:0">{{ text }}</p>
+{%- endmacro %}

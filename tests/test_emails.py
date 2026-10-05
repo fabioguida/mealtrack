@@ -115,3 +115,93 @@ def test_settings_page_and_send_now(client, db, planned, console_backend):
     assert r.status_code == 303 and "inviata" in r.headers["location"]
     assert len(console_backend.outbox) == 1 and "settimana" in console_backend.outbox[0].subject
     assert 'data-test="log"' in client.get("/notifiche").text
+
+
+# --- the fun part: phrases, mascot, milestones, comeback --------------------------
+
+def _log(client, day, grams, pasta):
+    client.post("/pasti", data={"when": f"{day.isoformat()}T13:00", "meal_type": "pranzo", "food_id": [pasta.id], "grams": [grams]})
+
+
+def test_phrases_are_filled_and_stable():
+    from app.phrases import phrase
+
+    a = phrase("over", "2026-10-05:1", over=120)
+    assert "120" in a and a == phrase("over", "2026-10-05:1", over=120)
+    assert phrase("sconosciuta", "x") == ""
+    assert {phrase("on_target", f"2026-10-{d:02d}:1") for d in range(1, 20)} > {phrase("on_target", "2026-10-01:1")}  # rotates
+
+
+def test_situation_drives_line_mascot_and_icons(client, db, user, pasta):
+    today = date.today()
+    msg = E.compose_daily(db, user, today)                       # profile, nothing logged, no plan
+    assert 'data-mascot="sleepy"' in msg.html and "Nessun pasto registrato oggi" in msg.text
+    assert "/static/img/email/flame.png" in msg.html and "/static/img/email/chart.png" in msg.html and "🔥 OGGI" in msg.text
+    _log(client, today, 500, pasta)                               # 1855 of 1913 kcal → on target
+    p = progress_for(db, user, today)
+    assert p.situation == "on_target" and p.days_since_log == 0
+    msg = E.compose_daily(db, user, today)
+    assert 'data-mascot="happy"' in msg.html and "Come va oggi" in msg.subject
+    _log(client, today, 200, pasta)                               # 2597 → over
+    p = progress_for(db, user, today)
+    assert p.situation == "over"
+    msg = E.compose_daily(db, user, today)
+    assert 'data-mascot="sweaty"' in msg.html and "684" in msg.text  # the kcal over, in the opening line
+
+
+def test_daily_email_has_shopping_icon(client, db, planned):
+    msg = E.compose_daily(db, planned, date.today())
+    assert "/static/img/email/cart.png" in msg.html and "🛒 SPESA PER DOMANI" in msg.text
+    assert "/static/img/email/plate.png" in msg.html and "🍽 DOMANI NEL PIANO" in msg.text
+
+
+def test_milestones_streak_and_weight(client, db, user, pasta):
+    from app.models import Weight
+
+    today = date.today()
+    for d in range(3):
+        _log(client, today - timedelta(days=d), 500, pasta)
+    db.add(Weight(user_id=user.id, date=today, kg=83.9))          # 85.0 → 83.9: first kilo
+    db.commit()
+    p = progress_for(db, user, today)
+    assert p.streak == 3 and set(p.milestones) == {"streak_3", "weight_1"}
+    msg = E.compose_daily(db, user, today)
+    assert 'data-mascot="party"' in msg.html and "/static/img/email/star.png" in msg.html
+    assert "Tre giorni di fila" in msg.text and "Primo chilo" in msg.text
+    # The weight milestone fires only on the day it is crossed.
+    assert "weight_1" not in progress_for(db, user, today + timedelta(days=1)).milestones
+
+
+def test_comeback_thresholds(client, db, user, pasta):
+    today = date.today()
+    _log(client, today - timedelta(days=2), 500, pasta)
+    assert progress_for(db, user, today).days_since_log == 2
+    msg = E.compose_daily(db, user, today)
+    assert "Ci manchi" in msg.subject and "2 giorni" in msg.text and 'data-mascot="sleepy"' in msg.html and "👋" in msg.text
+    assert "/static/img/email/wave.png" in msg.html and "Riparti da Oggi" in msg.html
+    # 7 days: the weekly note; 8..13: silence; 14: again.
+    assert E.compose_daily(db, user, today + timedelta(days=5)) is not None
+    assert E.compose_daily(db, user, today + timedelta(days=6)) is None
+    assert E.compose_daily(db, user, today + timedelta(days=12)) is not None
+    # 30 days: goodbye; after: nothing, daily or weekly.
+    bye = E.compose_daily(db, user, today + timedelta(days=28))
+    assert bye is not None and "Smetto di scriverti" in bye.subject and "A presto" in bye.html and "Un mese di silenzio" in bye.text
+    assert E.compose_daily(db, user, today + timedelta(days=29)) is None
+    assert E.compose_weekly(db, user, today + timedelta(days=40)) is None
+
+
+def test_never_logged_user_gets_the_normal_mail(db, planned):
+    p = progress_for(db, planned, date.today())
+    assert p.days_since_log == 0 and p.situation == "no_log"
+    msg = E.compose_daily(db, planned, date.today())
+    assert msg is not None and "Spesa per domani" in msg.subject and "Ci manchi" not in msg.subject
+
+
+def test_weekly_only_switch(client, db, planned, console_backend):
+    r = client.post("/notifiche", data={"weekly_only": "1"}, follow_redirects=False)
+    assert r.status_code == 303 and db.get(NotificationSettings, planned.id).weekly_only is True
+    assert E.compose_daily(db, planned, date.today()) is None
+    saturday = date.today() + timedelta(days=(5 - date.today().weekday()) % 7)
+    msg = E.compose_weekly(db, planned, saturday)                 # shopping + progress despite the other switches being off
+    assert msg is not None and "SPESA DELLA SETTIMANA" in msg.text and "LA SETTIMANA APPENA FINITA" in msg.text
+    assert 'name="weekly_only" value="1" checked' in client.get("/notifiche").text

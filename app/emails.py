@@ -2,7 +2,13 @@
 
 Backends: ConsoleBackend prints (development, tests, and keeps an outbox);
 SesBackend sends through Amazon SES with the instance's role. Content is
-rendered from templates/emails/<kind>.txt and .html.
+rendered from templates/emails/<kind>.*; the opening line and the milestones
+come from data/email_phrases_it.json.
+
+The evening mail changes shape with the user's situation: a normal day gets
+tomorrow's shopping list and the progress; after two days without a logged
+meal it becomes a short "come back" note, weekly after seven days, and stops
+after thirty (one last line). Never more than one email a day.
 """
 
 from dataclasses import dataclass
@@ -14,8 +20,13 @@ from sqlalchemy.orm import Session
 from app import config
 from app.deps import templates
 from app.models import EmailLog, NotificationSettings, User
-from app.progress import progress_for
+from app.phrases import phrase
+from app.progress import ProgressSummary, progress_for
 from app.shopping import shopping_list
+
+COMEBACK_AFTER_DAYS = 2
+WEEKLY_AFTER_DAYS = 7
+STOP_AFTER_DAYS = 30
 
 
 @dataclass(frozen=True)
@@ -83,10 +94,45 @@ def get_backend():
 
 def settings_for(db: Session, user: User) -> NotificationSettings:
     row = db.get(NotificationSettings, user.id)
-    return row or NotificationSettings(user_id=user.id, daily_shopping=True, weekly_shopping=True, progress=True)
+    return row or NotificationSettings(user_id=user.id, daily_shopping=True, weekly_shopping=True, progress=True, weekly_only=False)
 
 
-# --- composition ---------------------------------------------------------------
+# --- the human lines -------------------------------------------------------------
+
+def first_name(user: User) -> str:
+    return user.email.split("@")[0].split(".")[0].capitalize()
+
+
+def opening_line(user: User, p: ProgressSummary | None, day: date) -> str:
+    if p is None:
+        return ""
+    t = p.today
+    values = {"name": first_name(user), "streak": p.streak, "days": p.days_since_log}
+    if t.eaten_kcal is not None:
+        values["over"] = int(round(max(0.0, t.eaten_kcal - t.allowed_kcal)))
+        values["left"] = int(round(max(0.0, t.allowed_kcal - t.eaten_kcal)))
+    return phrase(p.situation, f"{day}:{user.id}", **values)
+
+
+def milestone_lines(user: User, p: ProgressSummary | None, day: date) -> list[str]:
+    if p is None:
+        return []
+    kg = (p.first_weight[1] - p.weights[-1][1]) if (p.first_weight and p.weights) else 0.0
+    return [l for l in (phrase(m, f"{day}:{user.id}", name=first_name(user), streak=p.streak, kg=f"{kg:.1f}") for m in p.milestones) if l]
+
+
+MASCOTS = {"on_target": "happy", "under": "happy", "over": "sweaty", "no_log": "sleepy"}
+
+
+def mascot_for(p: ProgressSummary | None, milestones: list[str]) -> str | None:
+    """The plate-face at the top of the mail (static/img/email/face-*.png): party on a
+    milestone, otherwise it follows today's situation; none without a progress."""
+    if p is None:
+        return None
+    return "party" if milestones else MASCOTS[p.situation]
+
+
+# --- composition -----------------------------------------------------------------
 
 def _render(kind: str, ctx: dict) -> tuple[str, str, str]:
     ctx = {**ctx, "app_url": config.APP_URL}
@@ -97,14 +143,40 @@ def _render(kind: str, ctx: dict) -> tuple[str, str, str]:
 
 
 def compose_daily(db: Session, user: User, today: date) -> Message | None:
-    """The evening mail: tomorrow's shopping list and today's progress."""
+    """The evening mail, shaped by the situation; None when nothing should go out."""
     s = settings_for(db, user)
+    if s.weekly_only:
+        return None
     tomorrow = today + timedelta(days=1)
+    progress = progress_for(db, user, today)
+    away = progress.days_since_log if progress else 0
+
+    if progress is not None and away >= COMEBACK_AFTER_DAYS:
+        if away > STOP_AFTER_DAYS:
+            return None
+        if away == STOP_AFTER_DAYS:
+            situation = "goodbye"
+        elif away >= WEEKLY_AFTER_DAYS:
+            if away % 7 != 0:
+                return None
+            situation = "comeback_long"
+        else:
+            situation = "comeback_short"
+        line = phrase(situation, f"{today}:{user.id}", name=first_name(user), days=away)
+        subject, text, html = _render("comeback", {"user": user, "today": today, "tomorrow": tomorrow, "line": line,
+                                                   "tomorrow_meals": progress.tomorrow_meals, "goodbye": situation == "goodbye",
+                                                   "mascot": "sleepy"})
+        return Message(user.email, subject, text, html)
+
     groups = shopping_list(db, user, tomorrow, tomorrow) if s.daily_shopping else []
-    progress = progress_for(db, user, today) if s.progress else None
+    progress = progress if s.progress else None
     if not groups and progress is None:
         return None
-    subject, text, html = _render("daily", {"user": user, "today": today, "tomorrow": tomorrow, "groups": groups, "progress": progress})
+    milestones = milestone_lines(user, progress, today)
+    subject, text, html = _render("daily", {
+        "user": user, "today": today, "tomorrow": tomorrow, "groups": groups, "progress": progress,
+        "line": opening_line(user, progress, today), "milestones": milestones, "mascot": mascot_for(progress, milestones),
+    })
     return Message(user.email, subject, text, html)
 
 
@@ -113,11 +185,18 @@ def compose_weekly(db: Session, user: User, saturday: date) -> Message | None:
     s = settings_for(db, user)
     monday = saturday + timedelta(days=(7 - saturday.weekday()) % 7 or 7)  # next Monday
     sunday = monday + timedelta(days=6)
-    groups = shopping_list(db, user, monday, sunday) if s.weekly_shopping else []
-    progress = progress_for(db, user, saturday - timedelta(days=1)) if s.progress else None
+    groups = shopping_list(db, user, monday, sunday) if (s.weekly_shopping or s.weekly_only) else []
+    progress = progress_for(db, user, saturday - timedelta(days=1)) if (s.progress or s.weekly_only) else None
+    if progress is not None and progress.days_since_log > STOP_AFTER_DAYS:
+        return None  # gone for good, as far as we know: silence
     if not groups and progress is None:
         return None
-    subject, text, html = _render("weekly", {"user": user, "saturday": saturday, "monday": monday, "sunday": sunday, "groups": groups, "progress": progress})
+    milestones = milestone_lines(user, progress, saturday - timedelta(days=1))
+    subject, text, html = _render("weekly", {
+        "user": user, "saturday": saturday, "monday": monday, "sunday": sunday, "groups": groups, "progress": progress,
+        "line": phrase("weekly_open", f"{saturday}:{user.id}", name=first_name(user)),
+        "milestones": milestones, "mascot": "party" if milestones else ("happy" if progress else None),
+    })
     return Message(user.email, subject, text, html)
 
 

@@ -1,0 +1,52 @@
+{
+  "_comment": "One line per situation opens each email; the line rotates with the date so it is not the same every evening. Edit freely: tone is light, never preachy, never medical. Placeholders: {name} first part of the email, {streak} days in a row, {kg} kilos, {days} days away, {over} kcal over, {left} kcal left.",
+  "on_target": [
+    "Oggi hai fatto il compito. Il frigo è orgoglioso di te.",
+    "Giornata in linea: niente di eroico, che è esattamente il punto.",
+    "Oggi tutto torna. Ti sei meritato di non pensarci più fino a domani.",
+    "Centrato. Se continua così, la bilancia dovrà adeguarsi.",
+    "Oggi la somma torna e nessuno ha sofferto. Bravo.",
+    "In linea anche oggi. La costanza è noiosa da fuori e potente da dentro."
+  ],
+  "under": [
+    "Oggi sei rimasto sotto di {left} kcal. Va bene se stai bene; se hai fame, non è una gara.",
+    "Giornata leggera: ti sono rimaste {left} kcal. Non vale recuperarle alle 23 davanti al frigo.",
+    "Sotto target di {left} kcal. Il corpo prende nota; l'app anche, ma senza giudicare."
+  ],
+  "over": [
+    "Oggi sei andato lungo di {over} kcal. Succede: la settimana è ancora in piedi.",
+    "{over} kcal oltre. Non è un reato, è un martedì. Domani si ricomincia dal piano.",
+    "Sforato di {over} kcal. Guarda la media della settimana prima di mettere il broncio.",
+    "Oggi il piatto ha vinto. Capita ai migliori; la media dei sette giorni decide, non stasera."
+  ],
+  "no_log": [
+    "Oggi il diario è rimasto bianco. O digiuno eroico o smemoratezza: un tocco e si risolve.",
+    "Nessun pasto registrato oggi. Il piano ti aspetta con pazienza, come un cane buono.",
+    "Pagina vuota oggi. Se hai mangiato (probabile), i preset con un tocco ti rimettono in pari."
+  ],
+  "comeback_short": [
+    "Sono {days} giorni che non ti vedo da queste parti. Nessun rimprovero: un pasto, anche uno solo, e sei di nuovo dentro.",
+    "{days} giorni di silenzio. Il piano di domani è pronto lo stesso; con un tocco sui preset riparti senza fatica.",
+    "Ti sei preso una pausa di {days} giorni. Legittimo. Quando vuoi, la porta è quella di sempre: Oggi."
+  ],
+  "comeback_long": [
+    "Una settimana senza di te. Ti scrivo una volta a settimana, non di più: quando torni, il piano si rigenera in un tocco.",
+    "{days} giorni. Non ti disturbo più di una volta a settimana. Se il piano non ti piaceva, dimmelo cambiando orari e preferenze: lo rifacciamo."
+  ],
+  "goodbye": [
+    "Un mese di silenzio: smetto di scriverti, non di aspettarti. Quando vuoi, l'app è dove l'hai lasciata e le email ripartono con il primo pasto registrato."
+  ],
+  "streak_3": ["Tre giorni di fila. Il più difficile è iniziare, e l'hai già fatto."],
+  "streak_7": ["Sette giorni di fila. Questo è un comportamento da persona che sa cosa sta facendo.", "Una settimana intera registrata. Ora il grafico ha qualcosa da raccontare."],
+  "streak_14": ["Quattordici giorni di fila: due settimane senza buchi. Statisticamente, è un'abitudine."],
+  "streak_30": ["Trenta giorni di fila. A questo punto non è più l'app che ti aiuta: sei tu che aiuti l'app."],
+  "weight_1": ["Primo chilo in meno dalla prima pesata. Un pacco di zucchero che non porti più in giro."],
+  "weight_2": ["Due chili in meno dalla prima pesata. La cintura comincia a notarlo."],
+  "weight_5": ["Cinque chili in meno dalla prima pesata. Questo non è un buon periodo: è un risultato."],
+  "week_in_line": ["Settimana intera registrata e in linea con il target. È così che si fa, e l'hai fatto."],
+  "weekly_open": [
+    "Weekend: si pianifica la spesa, così la settimana si cucina da sola.",
+    "Sabato, lista in mano: comprare quello che è nel piano è metà del lavoro.",
+    "Ecco la spesa della settimana. Il resto lo fanno le abitudini."
+  ]
+}

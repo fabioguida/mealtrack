@@ -3,13 +3,14 @@
 {% block content %}
 <p class="eyebrow">Email</p>
 <h1>Notifiche</h1>
-<p class="hint">Le email arrivano a <b>{{ email }}</b>. Ogni giorno alle 18:00 la spesa per domani e come è andata oggi; il sabato alle 8:00 la spesa di tutta la settimana che viene.</p>
+<p class="hint">Le email arrivano a <b>{{ email }}</b>. Ogni giorno alle 18:00 la spesa per domani e come è andata oggi; il sabato alle 8:00 la spesa di tutta la settimana che viene. Se per qualche giorno non registri nulla, l'email serale diventa un breve «ci manchi»; dopo una settimana al massimo una a settimana, dopo un mese nessuna.</p>
 {% if msg %}<p class="errors" style="border-left-color:var(--ok);background:#EAF5EE;color:#1F5A38" data-test="msg">{{ msg }}</p>{% endif %}
 
 <form method="post" action="/notifiche" class="notifiche" data-test="settings">
   <label class="check"><input type="checkbox" name="daily_shopping" value="1"{% if s.daily_shopping %} checked{% endif %}> Spesa di domani, ogni giorno alle 18:00</label>
   <label class="check"><input type="checkbox" name="weekly_shopping" value="1"{% if s.weekly_shopping %} checked{% endif %}> Spesa della settimana, il sabato alle 8:00</label>
   <label class="check"><input type="checkbox" name="progress" value="1"{% if s.progress %} checked{% endif %}> Progressi: calorie e proteine del giorno, andamento della settimana, peso</label>
+  <label class="check"><input type="checkbox" name="weekly_only" value="1"{% if s.weekly_only %} checked{% endif %}> Solo il sabato: una sola email a settimana, niente email serali</label>
   <div class="btns"><button class="btn" type="submit">Salva</button></div>
 </form>
 

@@ -1,8 +1,11 @@
 {% extends "emails/_layout.html" %}
+{% import "emails/_icons.html" as ic with context %}
 {% set title = "La spesa della settimana" %}
 {% block body %}
+{% if line %}<p style="margin:0 0 12px;font-size:18px">{{ line }}</p>{% endif %}
+{% for m in milestones %}{{ ic.star(m) }}{% endfor %}
 {% if groups %}
-<p style="margin:0;color:#56646F">Per i pasti da {{ monday|d }} a {{ sunday|d }}.</p>
+{{ ic.h("cart", "Spesa da " ~ (monday|d) ~ " a " ~ (sunday|d)) }}
 {% include "emails/_shopping.html" %}
 {% else %}
 <p style="margin:0">Per la settimana da {{ monday|d }} non c'è un piano: <a href="{{ app_url }}/piano" style="color:#0F2A44">generalo nell'app</a> per avere la lista.</p>
