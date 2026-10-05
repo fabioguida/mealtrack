@@ -1,4 +1,4 @@
-{% if foods %}
+{% if foods or recipes %}
 <ul class="risultati" data-test="results">
 {% for f in foods %}
   {% if mode == 'pref' %}
@@ -13,6 +13,12 @@
     <span class="mono">{{ f.kcal|num }} kcal · P {{ f.protein_g|num }} · C {{ f.carbs_g|num }} · G {{ f.fat_g|num }} per 100 g{% if f.source == 'custom' %} · mio{% endif %}</span>
   </button></li>
   {% endif %}
+{% endfor %}
+{% for r in recipes %}
+  <li class="piatto" data-test="recipe"><button type="button" hx-get="/pasti/righe?piatto={{ r.key }}" hx-target="#righe" hx-swap="beforeend">
+    <span class="badge">Piatto</span><span class="nome">{{ r.name }}</span>
+    <span class="mono">{{ r.ingredients|length }} ingredienti, porzione tipica, grammi modificabili</span>
+  </button></li>
 {% endfor %}
 </ul>
 {% elif q|length >= 2 %}

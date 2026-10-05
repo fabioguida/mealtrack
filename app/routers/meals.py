@@ -12,6 +12,7 @@ from app.calc.nutrition import item_values, meal_totals
 from app.db import get_db
 from app.deps import current_user, templates
 from app.models import MEAL_TYPES, Food, Meal, MealItem, MealPreset, MealPresetItem, User
+from app.recipes import recipe_by_key, resolve
 from app.routers.foods import visible_foods
 from app.services import meal_type_for, usual_grams
 
@@ -114,6 +115,21 @@ def riga(
         "partials/item_row.html",
         {"food": food, "grams": usual or 100, "usual": usual},
     )
+
+
+@router.get("/righe")
+def righe(
+    request: Request,
+    piatto: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(current_user),
+):
+    """All the rows of a composite dish (HTMX, appended to #righe)."""
+    recipe = recipe_by_key(piatto)
+    items = resolve(db, recipe) if recipe else None
+    if items is None:
+        raise HTTPException(404)
+    return templates.TemplateResponse(request, "partials/item_rows.html", {"items": items})
 
 
 @router.post("/totali")

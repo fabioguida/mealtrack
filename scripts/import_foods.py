@@ -25,6 +25,15 @@ from app.textsearch import search_key
 
 DATA = Path(__file__).resolve().parent.parent / "data"
 FILES = {"swiss": DATA / "foods_swiss_it.csv", "extra": DATA / "foods_extra_it.csv"}
+# Extra Italian synonyms for search ("spaghetti" → Pasta, cotta), merged at import.
+SYNONYMS_FILE = DATA / "foods_synonyms_it.csv"
+
+
+def read_synonyms(path: Path = SYNONYMS_FILE) -> dict[tuple[str, str], str]:
+    if not path.is_file():
+        return {}
+    with open(path, newline="", encoding="utf-8") as f:
+        return {(r["source"], str(r["id"])): r["synonyms"].strip() for r in csv.DictReader(f)}
 
 
 @dataclass
@@ -38,17 +47,21 @@ def read_rows(path: Path) -> list[dict]:
         return list(csv.DictReader(f))
 
 
-def import_foods(db: Session, files: dict[str, Path] = FILES) -> ImportReport:
+def import_foods(
+    db: Session, files: dict[str, Path] = FILES, synonyms_file: Path = SYNONYMS_FILE
+) -> ImportReport:
     report = ImportReport()
+    extra_synonyms = read_synonyms(synonyms_file)
     existing = {
         (f.source, f.source_id): f
         for f in db.scalars(select(Food).where(Food.source.in_(list(files))))
     }
     for source, path in files.items():
         for r in read_rows(path):
+            syn = "; ".join(s for s in ((r.get("synonyms") or "").strip(), extra_synonyms.get((source, str(r["id"])), "")) if s)
             values = dict(
                 name=r["name"].strip(),
-                synonyms=(r.get("synonyms") or "").strip() or None,
+                synonyms=syn or None,
                 category=(r.get("category") or "").strip() or None,
                 kcal=float(r["kcal"]),
                 protein_g=float(r["protein_g"]),

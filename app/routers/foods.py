@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from app.db import get_db
 from app.deps import current_user, templates
 from app.models import Food, User
+from app.recipes import search_recipes
 from app.textsearch import query_words, search_key
 
 router = APIRouter(prefix="/alimenti")
@@ -51,8 +52,13 @@ def cerca(
     user: User = Depends(current_user),
 ):
     foods = search_foods(db, user, q)
+    recipes = [] if mode == "pref" else search_recipes(q)
+    if recipes:
+        foods = foods[:12]  # keep the dishes within reach on a phone
     return templates.TemplateResponse(
-        request, "partials/food_results.html", {"foods": foods, "q": q.strip(), "mode": mode}
+        request,
+        "partials/food_results.html",
+        {"foods": foods, "recipes": recipes, "q": q.strip(), "mode": mode},
     )
 
 

@@ -1,6 +1,6 @@
-"""Load into the test database only the foods that data/template_dishes.json
-references, taken from the real CSVs in data/, so the planner tests run on the
-same numbers as the app."""
+"""Load into the test database only the foods that data/template_dishes.json or
+data/recipes_it.json reference, taken from the real CSVs in data/, so the tests
+run on the same numbers as the app."""
 
 import csv
 import json
@@ -13,9 +13,12 @@ DATA = Path(__file__).resolve().parent.parent / "data"
 FILES = {"swiss": DATA / "foods_swiss_it.csv", "extra": DATA / "foods_extra_it.csv"}
 
 
-def load_plan_foods(db):
-    dishes = json.loads((DATA / "template_dishes.json").read_text(encoding="utf-8"))["dishes"]
-    wanted = {(i["source"], str(i["id"])) for d in dishes for i in d["ingredients"]}
+def refs_in(path: Path, key: str) -> set[tuple[str, str]]:
+    data = json.loads(path.read_text(encoding="utf-8"))[key]
+    return {(i["source"], str(i["id"])) for d in data for i in d["ingredients"]}
+
+
+def load_foods(db, wanted: set[tuple[str, str]]):
     rows = []
     for source, path in FILES.items():
         with open(path, newline="", encoding="utf-8") as f:
@@ -32,3 +35,11 @@ def load_plan_foods(db):
     db.add_all(rows)
     db.commit()
     return rows
+
+
+def load_plan_foods(db):
+    return load_foods(db, refs_in(DATA / "template_dishes.json", "dishes"))
+
+
+def load_recipe_foods(db):
+    return load_foods(db, refs_in(DATA / "recipes_it.json", "recipes"))
