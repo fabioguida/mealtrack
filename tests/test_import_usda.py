@@ -4,7 +4,7 @@ import pytest
 from sqlalchemy import func, select
 
 from app.models import Food
-from scripts.import_usda import import_usda
+from scripts.import_usda import import_usda, read_italian_names
 
 FIXTURE = Path(__file__).parent / "fixtures" / "usda"
 
@@ -32,6 +32,26 @@ def test_import_fixture(db):
 
     assert db.scalar(select(Food).where(Food.usda_fdc_id == 2000001)) is None
     assert db.scalar(select(Food).where(Food.usda_fdc_id == 2346386)) is None
+
+
+def test_italian_names_are_applied(db):
+    names_it = read_italian_names(FIXTURE / "foods_it.csv")
+    assert len(names_it) == 2
+
+    import_usda(db, [FIXTURE], names_it)
+    pasta = db.scalar(select(Food).where(Food.usda_fdc_id == 170148))
+    assert pasta.name_it == "Pasta, cotta, arricchita, senza sale aggiunto"
+    egg = db.scalar(select(Food).where(Food.usda_fdc_id == 171287))
+    assert egg.name_it is None
+
+    # A later import with a corrected name updates the row.
+    import_usda(db, [FIXTURE], {170148: "Pasta cotta"})
+    db.expire_all()
+    assert db.scalar(select(Food).where(Food.usda_fdc_id == 170148)).name_it == "Pasta cotta"
+
+
+def test_missing_italian_file_is_empty():
+    assert read_italian_names(FIXTURE / "does_not_exist.csv") == {}
 
 
 def test_import_is_idempotent(db):

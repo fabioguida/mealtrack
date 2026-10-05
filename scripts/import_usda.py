@@ -72,8 +72,19 @@ def read_usda_dir(directory: Path) -> dict[int, dict]:
     return result
 
 
-def import_usda(db: Session, directories: list[Path]) -> ImportReport:
+def read_italian_names(path: Path) -> dict[int, str]:
+    """data/foods_it.csv (fdc_id,name_it), built by scripts/build_foods_it.py."""
+    if not path.is_file():
+        return {}
+    with open(path, newline="", encoding="utf-8") as f:
+        return {int(r["fdc_id"]): r["name_it"] for r in csv.DictReader(f) if r["name_it"]}
+
+
+def import_usda(
+    db: Session, directories: list[Path], italian_names: dict[int, str] | None = None
+) -> ImportReport:
     report = ImportReport()
+    italian_names = italian_names or {}
     existing = {
         f.usda_fdc_id: f
         for f in db.scalars(select(Food).where(Food.source == "usda"))
@@ -83,6 +94,7 @@ def import_usda(db: Session, directories: list[Path]) -> ImportReport:
             if values is None:
                 report.skipped_no_energy += 1
                 continue
+            values["name_it"] = italian_names.get(fdc_id)
             food = existing.get(fdc_id)
             if food is None:
                 food = Food(source="usda", usda_fdc_id=fdc_id, **values)
@@ -101,8 +113,10 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         sys.exit(__doc__)
     dirs = [Path(a) for a in sys.argv[1:]]
+    names_it = read_italian_names(Path(__file__).resolve().parent.parent / "data" / "foods_it.csv")
     with Session(engine) as session:
-        r = import_usda(session, dirs)
+        r = import_usda(session, dirs, names_it)
+    print(f"Nomi italiani disponibili: {len(names_it)}")
     print(
         f"Alimenti importati: {r.imported}, aggiornati: {r.updated}, "
         f"saltati senza energia: {r.skipped_no_energy}"
