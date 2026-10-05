@@ -1,0 +1,5 @@
+{% extends "base.html" %}
+{% block title %}{{ "Oggi" if day == today else day|d }} · Meal Tracker{% endblock %}
+{% block content %}
+<div id="bilancio">{% include "partials/balance.html" %}</div>
+{% endblock %}

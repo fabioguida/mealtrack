@@ -70,6 +70,37 @@ input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px;bord
 .totali .big dd{font-size:36px;line-height:1}
 @media (max-width:520px){.totali{grid-template-columns:1fr 1fr}.totali .big{grid-column:1/-1}}
 
+/* daily balance */
+.giorno{display:grid;grid-template-columns:48px 1fr 48px;align-items:center;gap:8px;margin-bottom:24px}
+.giorno .prev,.giorno .next{display:flex;align-items:center;justify-content:center;min-height:48px;font-size:30px;color:var(--navy);border:1px solid var(--line);border-radius:2px;background:var(--white)}
+.giorno .data{text-align:center}
+.giorno h1{margin:6px 0 4px;font-size:clamp(26px,5vw,40px)}
+.giorno .data .mono{color:var(--navy);border-bottom:1px solid var(--accent)}
+.barre{display:grid;gap:18px}
+.barra{background:var(--white);border:1px solid var(--line);padding:16px}
+.barra .testa{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.barra .nome{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.barra .valore{font-family:var(--mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.barra .valore b{font-family:var(--display);font-stretch:118%;font-weight:700;font-size:22px;color:var(--navy)}
+.barra.grande .valore b{font-size:40px;line-height:1}
+.traccia{height:14px;margin-top:12px;background:var(--paper);border:1px solid var(--line);border-radius:2px;overflow:hidden}
+.barra.grande .traccia{height:28px}
+.riempimento{height:100%;background:var(--navy);transition:width .4s ease}
+.barra.ok .riempimento{background:var(--ok)}
+.barra.over .riempimento{background:var(--over)}
+.barra.proteine .riempimento{background:var(--accent)}
+.barra.proteine.piena .riempimento{background:var(--ok)}
+.barra .resto{margin:8px 0 0;font-size:14px;color:var(--muted)}
+.barra.over .resto{color:var(--over);font-weight:600}
+.piccole{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.piccola .traccia{height:8px}
+.piccola .valore{font-size:12px}
+@media (max-width:420px){.piccole{grid-template-columns:1fr}}
+.pasti-giorno h2{margin-top:36px}
+.elenco .foto{flex-shrink:0;width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:var(--navy);color:var(--accent);font-family:var(--display);font-weight:800;font-size:18px;border-radius:2px}
+.pasti-giorno .elenco li a{align-items:center}
+.pasti-giorno .elenco .nome{flex:1}
+
 /* search results and lists */
 .risultati,.voci,.elenco{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
 .risultati li button,.voci li,.elenco li a{display:flex;flex-direction:column;gap:2px;width:100%;padding:12px 0;border:0;border-bottom:1px solid var(--line);background:transparent;font:inherit;text-align:left;cursor:pointer}

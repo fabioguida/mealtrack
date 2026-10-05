@@ -12,6 +12,8 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.calc.targets import Targets, daily_targets
+from app.config import PROFILE
 from app.db import get_db
 from app.models import User
 
@@ -27,16 +29,21 @@ def fmt_num(value: float, decimals: int = 1) -> str:
     return s.rstrip("0").rstrip(".") if "." in s else s
 
 
+def fmt_date(value) -> str:
+    """Short Italian date: 'lun 5 ott 2026'."""
+    return f"{_DAYS[value.weekday()]} {value.day} {_MONTHS[value.month - 1]} {value.year}"
+
+
 def fmt_datetime(value) -> str:
-    """Short Italian date: 'lun 5 ott 2026, 13:30'."""
-    return (
-        f"{_DAYS[value.weekday()]} {value.day} {_MONTHS[value.month - 1]} "
-        f"{value.year}, {value:%H:%M}"
-    )
+    """Short Italian date and time: 'lun 5 ott 2026, 13:30'."""
+    return f"{fmt_date(value)}, {value:%H:%M}"
 
 
 templates.env.filters["num"] = fmt_num
+templates.env.filters["d"] = fmt_date
+templates.env.filters["time"] = lambda value: f"{value:%H:%M}"
 templates.env.filters["dt"] = fmt_datetime
+
 
 
 def current_user(db: Session = Depends(get_db)) -> User:
@@ -44,3 +51,9 @@ def current_user(db: Session = Depends(get_db)) -> User:
     if user is None:
         raise HTTPException(500, "Nessun utente: esegui scripts/init_db.py")
     return user
+
+
+def current_targets(user: User = Depends(current_user)) -> Targets:
+    """Daily targets of the current user. Until phase 4 they come from the
+    PROFILE block in config; phase 4 reads the profiles table instead."""
+    return daily_targets(**PROFILE)

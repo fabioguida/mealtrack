@@ -1,6 +1,6 @@
 """Manual meal entry: list, create, view, edit, delete, plus HTMX partials."""
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
@@ -84,8 +84,14 @@ def elenco(
 
 
 @router.get("/nuovo")
-def nuovo(request: Request, user: User = Depends(current_user)):
+def nuovo(request: Request, giorno: str | None = None, user: User = Depends(current_user)):
     now = datetime.now().replace(second=0, microsecond=0)
+    if giorno:
+        # Coming from the balance page of another day: keep that day, current time.
+        try:
+            now = datetime.combine(date.fromisoformat(giorno), now.time())
+        except ValueError:
+            pass
     ctx = _form_context(None, [], [], "pranzo", now)
     return templates.TemplateResponse(request, "meals/form.html", ctx)
 

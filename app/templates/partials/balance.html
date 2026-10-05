@@ -1,0 +1,61 @@
+<nav class="giorno" aria-label="Giorno">
+  <a class="prev" href="/giorno/{{ prev_day.isoformat() }}" hx-get="/giorno/{{ prev_day.isoformat() }}" hx-target="#bilancio" hx-push-url="true" aria-label="Giorno precedente">‹</a>
+  <div class="data">
+    <p class="eyebrow">{{ "Oggi" if day == today else "Bilancio" }}</p>
+    <h1 data-test="day">{{ day|d }}</h1>
+    {% if day != today %}<a class="mono" href="/" hx-get="/" hx-target="#bilancio" hx-push-url="true">torna a oggi</a>{% endif %}
+  </div>
+  <a class="next" href="/giorno/{{ next_day.isoformat() }}" hx-get="/giorno/{{ next_day.isoformat() }}" hx-target="#bilancio" hx-push-url="true" aria-label="Giorno successivo">›</a>
+</nav>
+
+{% set b = balance %}
+<section class="barre">
+  <div class="barra grande {{ 'over' if b.kcal.over else 'ok' }}" data-test="kcal-bar">
+    <div class="testa">
+      <span class="nome">Calorie</span>
+      <span class="valore"><b data-test="kcal">{{ b.kcal.value|num(0) }}</b> / {{ b.kcal.target|num(0) }} kcal</span>
+    </div>
+    <div class="traccia"><div class="riempimento" style="width:{{ b.kcal.percent }}%"></div></div>
+    <p class="resto" data-test="kcal-rest">
+      {% if b.kcal.over %}{{ (-b.kcal.remaining)|num(0) }} kcal oltre il target{% else %}rimangono {{ b.kcal.remaining|num(0) }} kcal{% endif %}
+    </p>
+  </div>
+
+  <div class="barra proteine {{ 'piena' if not b.protein.remaining > 0 else '' }}" data-test="protein-bar">
+    <div class="testa">
+      <span class="nome">Proteine</span>
+      <span class="valore"><b data-test="protein">{{ b.protein.value|num(0) }}</b> / {{ b.protein.target|num(0) }} g</span>
+    </div>
+    <div class="traccia"><div class="riempimento" style="width:{{ b.protein.percent }}%"></div></div>
+    <p class="resto">{% if b.protein.remaining > 0 %}mancano {{ b.protein.remaining|num(0) }} g{% else %}target raggiunto{% endif %}</p>
+  </div>
+
+  <div class="piccole">
+    <div class="barra piccola" data-test="carbs-bar">
+      <div class="testa"><span class="nome">Carboidrati</span><span class="valore">{{ b.carbs.value|num(0) }} / {{ b.carbs.target|num(0) }} g</span></div>
+      <div class="traccia"><div class="riempimento" style="width:{{ b.carbs.percent }}%"></div></div>
+    </div>
+    <div class="barra piccola" data-test="fat-bar">
+      <div class="testa"><span class="nome">Grassi</span><span class="valore">{{ b.fat.value|num(0) }} / {{ b.fat.target|num(0) }} g</span></div>
+      <div class="traccia"><div class="riempimento" style="width:{{ b.fat.percent }}%"></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="pasti-giorno">
+  <h2>Pasti</h2>
+  {% if meals %}
+  <ul class="elenco" data-test="day-meals">
+  {% for m in meals %}
+    <li><a href="/pasti/{{ m.id }}/modifica">
+      <span class="foto" aria-hidden="true">{{ m.meal_type[:1]|upper }}</span>
+      <span class="nome">{{ m.meal_type|capitalize }} <small>{{ m.datetime|time }} · {{ m.items|length }} aliment{{ 'o' if m.items|length == 1 else 'i' }}</small></span>
+      <span class="mono">{{ m.items|sum(attribute='kcal')|num(0) }} kcal · P {{ m.items|sum(attribute='protein_g')|num(0) }} g</span>
+    </a></li>
+  {% endfor %}
+  </ul>
+  {% else %}
+  <p class="hint" data-test="empty">Nessun pasto registrato{{ " oggi" if day == today else "" }}.</p>
+  {% endif %}
+  <div class="btns"><a class="btn" href="/pasti/nuovo?giorno={{ day.isoformat() }}">Aggiungi un pasto</a></div>
+</section>
