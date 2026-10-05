@@ -56,6 +56,21 @@ class SesBackend:
         )
 
 
+def register_recipient(email: str) -> None:
+    """While the SES account is in the sandbox, a recipient must be a verified
+    identity: registering the address at sign-up makes AWS send the user its
+    verification email right away. Harmless once production access is granted
+    (and a no-op with the console backend)."""
+    if config.EMAIL_BACKEND != "ses":
+        return
+    try:
+        import boto3
+
+        boto3.client("sesv2").create_email_identity(EmailIdentity=email)
+    except Exception as exc:  # already registered, no permission, offline: never block sign-up
+        print(f"ses identity for {email} not created: {type(exc).__name__}")
+
+
 _backend = None
 
 

@@ -11,6 +11,7 @@ from app.auth import clear_session, hash_password, set_session, verify_password
 from app.config import ALLOW_SIGNUP
 from app.db import get_db
 from app.deps import templates
+from app.emails import register_recipient
 from app.models import User
 
 router = APIRouter()
@@ -92,6 +93,7 @@ def registrati(
     user = User(email=email, password_hash=hash_password(password))
     db.add(user)
     db.commit()
+    register_recipient(email)
     response = RedirectResponse("/profilo", status_code=303)
     set_session(response, user)
     return response
