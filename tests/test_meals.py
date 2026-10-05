@@ -34,10 +34,12 @@ def test_search_partial(client, pasta, oil):
     assert "Pasta" not in r.text and "no-results" not in r.text
 
 
-def test_search_is_case_insensitive_and_matches_italian_alias(client, db, pasta):
-    pasta.name_it = "Pasta cotta"
+def test_search_is_case_insensitive_and_matches_synonyms(client, db, pasta):
+    from app.textsearch import search_key
+    pasta.synonyms = "spaghetti cotti"
+    pasta.search_key = search_key(pasta.name, pasta.synonyms)
     db.commit()
-    assert "Pasta cotta" in client.get("/alimenti/cerca", params={"q": "COTTA"}).text
+    assert "Pasta, cooked" in client.get("/alimenti/cerca", params={"q": "SPAGHETTI"}).text
 
 
 def test_row_and_totals_partials(client, pasta, oil):

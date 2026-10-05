@@ -4,12 +4,13 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import RedirectResponse
-from sqlalchemy import or_, select
+from sqlalchemy import case, func, or_, select
 from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.deps import current_user, templates
 from app.models import Food, User
+from app.textsearch import query_words, search_key
 
 router = APIRouter(prefix="/alimenti")
 
@@ -17,24 +18,27 @@ SEARCH_LIMIT = 20
 
 
 def visible_foods(user: User):
-    """Foods this user may use: all USDA rows plus their own custom ones."""
+    """Foods this user may use: every shared row plus their own custom ones."""
     return select(Food).where(
-        or_(Food.source == "usda", Food.owner_user_id == user.id)
+        or_(Food.source != "custom", Food.owner_user_id == user.id)
     )
 
 
 def search_foods(db: Session, user: User, q: str) -> list[Food]:
-    q = q.strip()
-    if len(q) < 2:
+    """Every word of the query must start a word of the food's name or synonyms,
+    in any order, ignoring accents. Basic foods come before prepared dishes
+    ("Cibi/..."), the user's own foods first of all, shorter names first."""
+    words = query_words(q)
+    if not words or len("".join(words)) < 2:
         return []
-    pattern = f"%{q}%"
-    stmt = (
-        visible_foods(user)
-        .where(or_(Food.name.ilike(pattern), Food.name_it.ilike(pattern)))
-        # Custom foods first (the user's own dishes), then short names first.
-        .order_by(Food.source.desc(), Food.name)
-        .limit(SEARCH_LIMIT)
-    )
+    stmt = visible_foods(user)
+    for w in words:
+        stmt = stmt.where(Food.search_key.like(f"% {w}%"))
+    stmt = stmt.order_by(
+        case((Food.source == "custom", 0), else_=1),
+        case((Food.category.like("Cibi%"), 1), else_=0),
+        func.length(Food.name),
+    ).limit(SEARCH_LIMIT)
     return list(db.scalars(stmt))
 
 
@@ -83,6 +87,7 @@ def crea(
             name=name,
             source="custom",
             owner_user_id=user.id,
+            search_key=search_key(name),
             kcal=kcal,
             protein_g=protein_g,
             carbs_g=carbs_g,

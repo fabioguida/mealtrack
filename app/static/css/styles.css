@@ -185,3 +185,5 @@ input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px;bord
 
 footer.wrap{padding:24px 0 40px;border-top:1px solid var(--line);color:var(--muted)}
 footer p{margin:0}
+footer .fonte{margin-top:6px;font-size:11px}
+footer .fonte a{border-bottom:1px solid var(--line)}

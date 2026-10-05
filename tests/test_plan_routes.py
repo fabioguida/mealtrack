@@ -49,10 +49,10 @@ def test_preferences(client, db, user, plan_foods):
     page = client.get("/preferenze").text
     assert 'name="cat_carne" value="avoid" checked' in page and 'name="cat_pesce" value="like" checked' in page
 
-    clams = next(f for f in plan_foods if "clam" in f.name)
+    clams = next(f for f in plan_foods if "Vongole" in f.name)
     assert client.post(f"/preferenze/alimento/{clams.id}/avoid", follow_redirects=False).status_code == 303
     assert "evito" in client.get("/preferenze").text
-    r = client.get("/alimenti/cerca", params={"q": "clam", "mode": "pref"})
+    r = client.get("/alimenti/cerca", params={"q": "vongole", "mode": "pref"})
     assert f"/preferenze/alimento/{clams.id}/avoid" in r.text
     pref = db.scalar(select(FoodPreference).where(FoodPreference.food_id == clams.id))
     assert client.post(f"/preferenze/{pref.id}/elimina", follow_redirects=False).status_code == 303

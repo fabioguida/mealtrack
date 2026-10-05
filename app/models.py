@@ -86,14 +86,21 @@ class Workout(Base):
 
 
 class Food(Base):
+    """A generic food, per 100 g. Sources: `swiss` (Banca dati svizzera dei
+    valori nutritivi), `extra` (Italian staples it lacks, data/foods_extra_it.csv),
+    `custom` (entered by a user, visible to that user only)."""
+
     __tablename__ = "foods"
+    __table_args__ = (UniqueConstraint("source", "source_id"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
-    # Italian name; search matches both names.
-    name_it: Mapped[str | None] = mapped_column(String(255))
+    synonyms: Mapped[str | None] = mapped_column(String(255))
+    category: Mapped[str | None] = mapped_column(String(160))
     source: Mapped[str] = mapped_column(String(10), nullable=False)
-    usda_fdc_id: Mapped[int | None] = mapped_column(Integer, unique=True)
+    source_id: Mapped[str | None] = mapped_column(String(16))
+    # Lowercase, accent-free words of name + synonyms, each preceded by a space.
+    search_key: Mapped[str] = mapped_column(String(600), nullable=False, default="", index=True)
     # Set only for custom foods.
     owner_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
     kcal: Mapped[float] = mapped_column(Float, nullable=False)
@@ -103,7 +110,12 @@ class Food(Base):
 
     @property
     def label(self) -> str:
-        return self.name_it or self.name
+        return self.name
+
+    @property
+    def is_dish(self) -> bool:
+        """Prepared dishes ("Cibi/...") rank after basic foods in search."""
+        return bool(self.category and self.category.startswith("Cibi"))
 
 
 class Meal(Base):

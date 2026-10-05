@@ -12,6 +12,7 @@ from app.auth import COOKIE, hash_password, make_session
 from app.db import Base, get_db, make_engine
 from app.main import app
 from app.models import Food, Profile, User, Weight
+from app.textsearch import search_key
 
 PASSWORD = "password-di-prova"
 
@@ -75,11 +76,12 @@ def anon(db):
     app.dependency_overrides.clear()
 
 
-def make_food(db, name, kcal, protein, carbs, fat, fdc_id=None, owner=None):
+def make_food(db, name, kcal, protein, carbs, fat, source_id=None, owner=None):
     food = Food(
         name=name,
-        source="custom" if owner else "usda",
-        usda_fdc_id=fdc_id,
+        source="custom" if owner else "swiss",
+        source_id=None if owner else source_id,
+        search_key=search_key(name),
         owner_user_id=owner.id if owner else None,
         kcal=kcal,
         protein_g=protein,
@@ -93,9 +95,9 @@ def make_food(db, name, kcal, protein, carbs, fat, fdc_id=None, owner=None):
 
 @pytest.fixture
 def pasta(db):
-    return make_food(db, "Pasta, cooked", 371, 13.0, 74.7, 1.5, fdc_id=170148)
+    return make_food(db, "Pasta, cooked", 371, 13.0, 74.7, 1.5, source_id="t-pasta")
 
 
 @pytest.fixture
 def oil(db):
-    return make_food(db, "Oil, olive", 884, 0, 0, 100, fdc_id=171413)
+    return make_food(db, "Oil, olive", 884, 0, 0, 100, source_id="t-oil")

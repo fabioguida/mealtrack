@@ -106,6 +106,10 @@ Handover step 1. No HTML yet.
 
 - None blocking. Open: whether to also add an Italian name column now (proposed above: yes, nullable).
 
+### Finding from use (after phase 7): USDA replaced
+
+The USDA import (8,171 foods, all names translated) was rejected on first use: "ci vuole un database robusto sugli alimenti di base, non quelli che si acquistano, e soprattutto non in america". US cuts, fast food, babyfood and breakfast cereals drowned the everyday foods. Replaced by the **Banca dati svizzera dei valori nutritivi** (1,216 generic foods, Italian names natively, free use with attribution) plus `data/foods_extra_it.csv` for Italian staples it lacks. The `foods` table now has `source` (`swiss` / `extra` / `custom`), `source_id`, `synonyms`, `category` and a `search_key` for word-prefix, accent-insensitive search with basic foods ranked before prepared dishes. See README.
+
 ---
 
 ## 2. Manual meal entry and the calculation engine

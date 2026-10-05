@@ -7,11 +7,11 @@ from sqlalchemy.exc import IntegrityError
 from app.models import Food, Meal, MealItem, User
 
 
-def _food(name, kcal, protein, carbs, fat, fdc_id=None):
+def _food(name, kcal, protein, carbs, fat, source_id=None):
     return Food(
         name=name,
-        source="usda" if fdc_id else "custom",
-        usda_fdc_id=fdc_id,
+        source="swiss" if source_id else "custom",
+        source_id=source_id,
         kcal=kcal,
         protein_g=protein,
         carbs_g=carbs,
@@ -21,8 +21,8 @@ def _food(name, kcal, protein, carbs, fat, fdc_id=None):
 
 def test_meal_with_items_round_trip(db):
     user = User(email="a@example.com")
-    pasta = _food("Pasta, cooked", 158, 5.8, 30.9, 0.9, fdc_id=170148)
-    oil = _food("Olive oil", 884, 0, 0, 100, fdc_id=171413)
+    pasta = _food("Pasta, cooked", 158, 5.8, 30.9, 0.9, source_id="378")
+    oil = _food("Olive oil", 884, 0, 0, 100, source_id="591")
     db.add_all([user, pasta, oil])
     db.flush()
 
@@ -66,10 +66,10 @@ def test_deleting_meal_deletes_items(db):
     assert db.scalars(select(MealItem)).all() == []
 
 
-def test_usda_fdc_id_is_unique(db):
-    db.add(_food("Pasta", 158, 5.8, 30.9, 0.9, fdc_id=170148))
+def test_source_id_is_unique_per_source(db):
+    db.add(_food("Pasta", 158, 5.8, 30.9, 0.9, source_id="378"))
     db.commit()
-    db.add(_food("Pasta again", 158, 5.8, 30.9, 0.9, fdc_id=170148))
+    db.add(_food("Pasta again", 158, 5.8, 30.9, 0.9, source_id="378"))
     with pytest.raises(IntegrityError):
         db.commit()
 

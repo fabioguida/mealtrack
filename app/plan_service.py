@@ -52,13 +52,16 @@ def _ingredient(food: Food, grams: float, role: str, unit_g: float | None) -> In
 def template_dishes(db: Session, path: Path = TEMPLATE_FILE) -> tuple[list[Dish], list[str]]:
     """Dishes from the JSON whose ingredients are all in the foods table."""
     data = json.loads(path.read_text(encoding="utf-8"))["dishes"]
-    ids = {i["fdc_id"] for d in data for i in d["ingredients"]}
-    foods = {f.usda_fdc_id: f for f in db.scalars(select(Food).where(Food.usda_fdc_id.in_(ids)))}
+    ids = {str(i["id"]) for d in data for i in d["ingredients"]}
+    foods = {
+        (f.source, f.source_id): f
+        for f in db.scalars(select(Food).where(Food.source_id.in_(ids), Food.source != "custom"))
+    }
     dishes, skipped = [], []
     for d in data:
         try:
             ings = tuple(
-                _ingredient(foods[i["fdc_id"]], i["grams"], i["role"], i.get("unit_g"))
+                _ingredient(foods[(i["source"], str(i["id"]))], i["grams"], i["role"], i.get("unit_g"))
                 for i in d["ingredients"]
             )
         except KeyError:

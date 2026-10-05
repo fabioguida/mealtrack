@@ -157,7 +157,7 @@ def test_protein_on_full_days_is_reported_honestly(dishes):
 
 
 def test_preferences_exclude_and_favour(dishes):
-    clams = next(i.food_id for d in dishes if d.key == "spaghetti-vongole" for i in d.ingredients if "clam" in i.label)
+    clams = next(i.food_id for d in dishes if d.key == "spaghetti-vongole" for i in d.ingredients if "vongol" in i.label.lower())
     prefs = Preferences(avoid_categories=frozenset({"carne"}), avoid_foods=frozenset({clams}))
     days = plan_period(dishes, author_days(), prefs, seed="test")
     for d in days:
