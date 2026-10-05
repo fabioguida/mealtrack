@@ -27,7 +27,7 @@
         "ses:SendEmail",
         "ses:SendRawEmail"
       ],
-      "Resource": "arn:aws:ses:eu-west-1:176146985576:identity/verenovotech.com"
+      "Resource": "arn:aws:ses:eu-west-1:176146985576:identity/*"
     }
   ]
 }
