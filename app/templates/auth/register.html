@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Registrati · Meal Tracker{% endblock %}
+{% block content %}
+<div class="stretta">
+<p class="eyebrow">Meal Tracker</p>
+<h1>Registrati</h1>
+{% if errors %}<ul class="errors" data-test="errors">{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+<form method="post" action="/registrati">
+  <label>Email <input type="email" name="email" value="{{ email }}" required autocomplete="email" autofocus></label>
+  <label>Password (almeno 8 caratteri) <input type="password" name="password" required minlength="8" autocomplete="new-password"></label>
+  <label>Ripeti la password <input type="password" name="password2" required minlength="8" autocomplete="new-password"></label>
+  <div class="btns"><button class="btn" type="submit">Crea l'account</button></div>
+</form>
+<p class="hint">Hai già un account? <a href="/accedi">Accedi</a></p>
+</div>
+{% endblock %}

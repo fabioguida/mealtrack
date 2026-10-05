@@ -1,4 +1,6 @@
-"""Shared fixtures: one in-memory SQLite database per test, a seeded user, a client."""
+"""Shared fixtures: one in-memory SQLite database per test, users, logged-in clients."""
+
+from datetime import date
 
 import pytest
 from fastapi.testclient import TestClient
@@ -6,9 +8,12 @@ from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app import models  # noqa: F401  (registers the tables on Base)
+from app.auth import COOKIE, hash_password, make_session
 from app.db import Base, get_db, make_engine
 from app.main import app
-from app.models import Food, User
+from app.models import Food, Profile, User, Weight
+
+PASSWORD = "password-di-prova"
 
 
 @pytest.fixture
@@ -27,17 +32,42 @@ def db(engine) -> Session:
     session.close()
 
 
-@pytest.fixture
-def user(db) -> User:
-    """The first user; `current_user` resolves to this one until phase 4."""
-    u = User(email="test@example.com")
+def make_user(db, email, with_profile=True, weight=85.0):
+    u = User(email=email, password_hash=hash_password(PASSWORD))
     db.add(u)
+    db.flush()
+    if with_profile:
+        db.add(Profile(user_id=u.id, sex="M", age=45, height_cm=180, activity="leggero",
+                       goal="dimagrire", deficit_kcal=500, protein_g_per_kg=1.5))
+        db.add(Weight(user_id=u.id, date=date(2026, 1, 1), kg=weight))
     db.commit()
     return u
 
 
+def login_client(db, user) -> TestClient:
+    app.dependency_overrides[get_db] = lambda: db
+    c = TestClient(app)
+    c.cookies.set(COOKIE, make_session(user.id))
+    return c
+
+
+@pytest.fixture
+def user(db) -> User:
+    """A registered user with a complete profile (85 kg → 1913 kcal target)."""
+    return make_user(db, "test@example.com")
+
+
 @pytest.fixture
 def client(db, user):
+    """Logged in as `user`."""
+    c = login_client(db, user)
+    yield c
+    app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def anon(db):
+    """Not logged in."""
     app.dependency_overrides[get_db] = lambda: db
     with TestClient(app) as c:
         yield c

@@ -1,21 +1,17 @@
-"""Shared FastAPI dependencies.
+"""Shared FastAPI dependencies and the Jinja environment."""
 
-`current_user` is a placeholder until phase 4 (authentication): every request
-acts as the seeded first user. Phase 4 replaces this function; routes keep
-depending on it unchanged.
-"""
-
+from datetime import date
 from pathlib import Path
 
-from fastapi import Depends, HTTPException
+from fastapi import Depends
 from fastapi.templating import Jinja2Templates
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.calc.targets import Targets, daily_targets
-from app.config import PROFILE
+from app.auth import current_user  # noqa: F401  (re-exported for the routers)
+from app.calc.targets import Targets
 from app.db import get_db
 from app.models import User
+from app.services import targets_for
 
 templates = Jinja2Templates(directory=Path(__file__).resolve().parent / "templates")
 
@@ -45,15 +41,14 @@ templates.env.filters["time"] = lambda value: f"{value:%H:%M}"
 templates.env.filters["dt"] = fmt_datetime
 
 
-
-def current_user(db: Session = Depends(get_db)) -> User:
-    user = db.scalar(select(User).order_by(User.id).limit(1))
-    if user is None:
-        raise HTTPException(500, "Nessun utente: esegui scripts/init_db.py")
-    return user
+class ProfileRequired(Exception):
+    """Raised when targets are needed but the profile is not filled in yet."""
 
 
-def current_targets(user: User = Depends(current_user)) -> Targets:
-    """Daily targets of the current user. Until phase 4 they come from the
-    PROFILE block in config; phase 4 reads the profiles table instead."""
-    return daily_targets(**PROFILE)
+def current_targets(
+    db: Session = Depends(get_db), user: User = Depends(current_user)
+) -> Targets:
+    targets = targets_for(db, user, date.today())
+    if targets is None:
+        raise ProfileRequired()
+    return targets

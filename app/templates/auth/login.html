@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Accedi · Meal Tracker{% endblock %}
+{% block content %}
+<div class="stretta">
+<p class="eyebrow">Meal Tracker</p>
+<h1>Accedi</h1>
+{% if errors %}<ul class="errors" data-test="errors">{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+<form method="post" action="/accedi">
+  <input type="hidden" name="next" value="{{ next }}">
+  <label>Email <input type="email" name="email" required autocomplete="email" autofocus></label>
+  <label>Password <input type="password" name="password" required autocomplete="current-password"></label>
+  <div class="btns"><button class="btn" type="submit">Entra</button></div>
+</form>
+{% if signup %}<p class="hint">Non hai un account? <a href="/registrati">Registrati</a></p>{% endif %}
+</div>
+{% endblock %}

@@ -32,10 +32,15 @@ nav .wrap{height:60px;display:flex;align-items:center;justify-content:space-betw
 .links{display:flex;gap:28px;font-size:14.5px;font-weight:500;color:var(--on-dark-muted)}
 .links a:hover{color:#fff}
 .links a.cta{color:#fff;border-bottom:2px solid var(--accent);padding-bottom:2px}
+.links form.inline{display:inline;margin:0}
+.links button.link{font:inherit;color:inherit;background:transparent;border:0;padding:0;cursor:pointer}
+.links button.link:hover{color:#fff}
+.stretta{max-width:440px}
+.riepilogo{margin-top:40px}
 .menu{display:none;font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--on-dark);background:transparent;border:1px solid rgba(255,255,255,.35);padding:10px 12px;border-radius:2px;cursor:pointer;min-height:44px}
 @media (max-width:640px){.links{display:none}.menu{display:inline-block}
   nav.open .links{display:flex;flex-direction:column;gap:0;position:fixed;top:60px;left:0;right:0;background:var(--ink);padding:24px;font-size:22px;font-weight:600;color:#fff;z-index:39}
-  nav.open .links a{padding:18px 0;border-bottom:1px solid var(--dark-line)}nav.open .links a.cta{color:var(--accent)}}
+  nav.open .links a,nav.open .links form.inline{display:block;padding:18px 0;border-bottom:1px solid var(--dark-line)}nav.open .links a.cta{color:var(--accent)}}
 
 /* buttons */
 .btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:30px;align-items:center}

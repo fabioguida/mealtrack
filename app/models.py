@@ -1,12 +1,12 @@
-"""Database tables. Phase 1: users, foods, meals, meal_items.
+"""Database tables.
 
 Nutrient columns on `foods` are per 100 g. `meal_items` stores the values
 computed at save time, so editing a food later does not rewrite past meals.
 """
 
-from datetime import datetime
+from datetime import date, datetime
 
-from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, func
+from sqlalchemy import Date, DateTime, Float, ForeignKey, Integer, String, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
@@ -14,6 +14,9 @@ from app.db import Base
 MEAL_TYPES = ("colazione", "pranzo", "spezzafame", "cena")
 INPUT_METHODS = ("manual", "photo", "preset")
 FOOD_SOURCES = ("usda", "custom")
+SEXES = ("M", "F")
+ACTIVITY_LEVELS = ("sedentario", "leggero", "moderato", "attivo", "molto_attivo")
+GOALS = ("dimagrire", "mantenere")
 
 
 class User(Base):
@@ -21,13 +24,43 @@ class User(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
-    # Nullable until phase 4 (authentication).
     password_hash: Mapped[str | None] = mapped_column(String(255))
     created_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=func.now()
     )
 
     meals: Mapped[list["Meal"]] = relationship(back_populates="user")
+    profile: Mapped["Profile | None"] = relationship(back_populates="user", uselist=False)
+
+
+class Profile(Base):
+    """What the targets need, except the weight, which lives in `weights`."""
+
+    __tablename__ = "profiles"
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
+    sex: Mapped[str] = mapped_column(String(1), nullable=False)
+    age: Mapped[int] = mapped_column(Integer, nullable=False)
+    height_cm: Mapped[float] = mapped_column(Float, nullable=False)
+    activity: Mapped[str] = mapped_column(String(16), nullable=False)
+    goal: Mapped[str] = mapped_column(String(16), nullable=False, default="dimagrire")
+    deficit_kcal: Mapped[float] = mapped_column(Float, nullable=False, default=500)
+    protein_g_per_kg: Mapped[float] = mapped_column(Float, nullable=False, default=1.5)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=func.now(), onupdate=func.now()
+    )
+
+    user: Mapped[User] = relationship(back_populates="profile")
+
+
+class Weight(Base):
+    __tablename__ = "weights"
+    __table_args__ = (UniqueConstraint("user_id", "date"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    date: Mapped[date] = mapped_column(Date, nullable=False)
+    kg: Mapped[float] = mapped_column(Float, nullable=False)
 
 
 class Food(Base):
@@ -35,7 +68,7 @@ class Food(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
-    # Italian alias, filled by hand; search matches both names.
+    # Italian name; search matches both names.
     name_it: Mapped[str | None] = mapped_column(String(255))
     source: Mapped[str] = mapped_column(String(10), nullable=False)
     usda_fdc_id: Mapped[int | None] = mapped_column(Integer, unique=True)
@@ -45,6 +78,10 @@ class Food(Base):
     protein_g: Mapped[float] = mapped_column(Float, nullable=False)
     carbs_g: Mapped[float] = mapped_column(Float, nullable=False)
     fat_g: Mapped[float] = mapped_column(Float, nullable=False)
+
+    @property
+    def label(self) -> str:
+        return self.name_it or self.name
 
 
 class Meal(Base):

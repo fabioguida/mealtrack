@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Profilo · Meal Tracker{% endblock %}
+{% block content %}
+<p class="eyebrow">Profilo</p>
+<h1>{{ "Completa il profilo" if is_new else "Il tuo profilo" }}</h1>
+{% if is_new %}<p class="hint" data-test="welcome">Servono questi dati per calcolare il tuo fabbisogno giornaliero.</p>{% endif %}
+{% if errors %}<ul class="errors" data-test="errors">{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+
+<form method="post" action="/profilo">
+  <div class="fields">
+    <label>Sesso
+      <select name="sex">
+        <option value="M"{% if v.sex == 'M' %} selected{% endif %}>Uomo</option>
+        <option value="F"{% if v.sex == 'F' %} selected{% endif %}>Donna</option>
+      </select>
+    </label>
+    <label>Età (anni) <input type="number" name="age" value="{{ v.age }}" min="10" max="110" required inputmode="numeric"></label>
+    <label>Altezza (cm) <input type="number" name="height_cm" value="{{ v.height_cm }}" min="100" max="250" step="any" required inputmode="decimal"></label>
+    <label>Peso attuale (kg) <input type="number" name="weight_kg" value="{{ v.weight_kg|num(1) if v.weight_kg != '' else '' }}" min="25" max="300" step="0.1" required inputmode="decimal"></label>
+  </div>
+  <label>Attività fisica
+    <select name="activity">
+      {% for key, label in activity_labels.items() %}<option value="{{ key }}"{% if v.activity == key %} selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+  </label>
+  <div class="fields">
+    <label>Obiettivo
+      <select name="goal">
+        <option value="dimagrire"{% if v.goal == 'dimagrire' %} selected{% endif %}>Dimagrire</option>
+        <option value="mantenere"{% if v.goal == 'mantenere' %} selected{% endif %}>Mantenere il peso</option>
+      </select>
+    </label>
+    <label>Deficit giornaliero (kcal, se dimagrisci) <input type="number" name="deficit_kcal" value="{{ v.deficit_kcal|num(0) if v.deficit_kcal != '' else '' }}" min="0" max="1500" step="50" inputmode="numeric"></label>
+    <label>Proteine (g per kg di peso) <input type="number" name="protein_g_per_kg" value="{{ v.protein_g_per_kg }}" min="0.5" max="3" step="0.1" inputmode="decimal"></label>
+  </div>
+  <div class="btns"><button class="btn" type="submit">Salva</button></div>
+</form>
+
+{% if targets %}
+<section class="riepilogo" data-test="targets">
+  <h2>Il tuo fabbisogno</h2>
+  <dl class="totali">
+    <div class="big"><dt>Target giornaliero</dt><dd>{{ targets.kcal|num(0) }} kcal</dd></div>
+    <div><dt>Metabolismo basale</dt><dd>{{ targets.bmr|num(0) }} kcal</dd></div>
+    <div><dt>Fabbisogno (TDEE)</dt><dd>{{ targets.tdee|num(0) }} kcal</dd></div>
+    <div><dt>Proteine</dt><dd>{{ targets.protein_g|num(0) }} g</dd></div>
+  </dl>
+  <p class="hint">Mifflin-St Jeor × fattore di attività, meno il deficit. Si ricalcola a ogni nuova pesata.</p>
+</section>
+{% endif %}
+{% endblock %}

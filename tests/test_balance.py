@@ -13,7 +13,7 @@ TARGETS = Targets(bmr=1700, tdee=2300, kcal=1900, protein_g=120, carbs_g=200, fa
 
 
 @pytest.fixture
-def fixed_targets():
+def fixed_targets(client):
     app.dependency_overrides[current_targets] = lambda: TARGETS
     yield TARGETS
     app.dependency_overrides.pop(current_targets, None)

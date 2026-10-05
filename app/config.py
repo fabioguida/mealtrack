@@ -7,12 +7,12 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 
 def _load_dotenv(path: Path) -> None:
-    """Minimal .env loader: KEY=VALUE lines, no quoting rules, env wins."""
+    """Minimal .env loader: KEY=VALUE lines, `#` comments, env wins."""
     if not path.is_file():
         return
     for line in path.read_text(encoding="utf-8").splitlines():
-        line = line.strip()
-        if not line or line.startswith("#") or "=" not in line:
+        line = line.split("#", 1)[0].strip()
+        if not line or "=" not in line:
             continue
         key, value = line.split("=", 1)
         os.environ.setdefault(key.strip(), value.strip())
@@ -24,14 +24,10 @@ DATABASE_URL = os.environ.get(
     "DATABASE_URL", f"sqlite:///{PROJECT_ROOT / 'mealtrack.db'}"
 )
 
-# Profile of the seeded user until phase 4 (profiles table). Placeholder
-# numbers; set the real ones in .env (see .env.example).
-PROFILE = {
-    "sex": os.environ.get("PROFILE_SEX", "M"),
-    "age": int(os.environ.get("PROFILE_AGE", "45")),
-    "height_cm": float(os.environ.get("PROFILE_HEIGHT_CM", "180")),
-    "weight_kg": float(os.environ.get("PROFILE_WEIGHT_KG", "85")),
-    "activity": os.environ.get("PROFILE_ACTIVITY", "leggero"),
-    "deficit_kcal": float(os.environ.get("PROFILE_DEFICIT_KCAL", "500")),
-    "protein_g_per_kg": float(os.environ.get("PROFILE_PROTEIN_G_PER_KG", "1.5")),
-}
+# Signs the session cookie. Set a long random value in production.
+SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-change-me")
+# Send the cookie only over HTTPS (set to true behind nginx in production).
+COOKIE_SECURE = os.environ.get("COOKIE_SECURE", "false").lower() == "true"
+SESSION_DAYS = int(os.environ.get("SESSION_DAYS", "30"))
+# Family and friends register themselves; close it once everyone is in.
+ALLOW_SIGNUP = os.environ.get("ALLOW_SIGNUP", "true").lower() == "true"

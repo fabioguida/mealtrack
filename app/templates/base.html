@@ -12,12 +12,16 @@
 <body>
 <nav aria-label="Principale"><div class="wrap">
   <a class="brand" href="/">Meal Tracker</a>
+  {% if request.state.user %}
   <div class="links" id="navlinks">
     <a href="/">Oggi</a>
     <a href="/pasti">Pasti</a>
+    <a href="/profilo">Profilo</a>
+    <form method="post" action="/esci" class="inline"><button type="submit" class="link">Esci</button></form>
     <a class="cta" href="/pasti/nuovo">Nuovo pasto</a>
   </div>
   <button class="menu" type="button" aria-label="Apri il menu" aria-expanded="false" aria-controls="navlinks">MENU</button>
+  {% endif %}
 </div></nav>
 <main class="wrap">
 {% block content %}{% endblock %}
