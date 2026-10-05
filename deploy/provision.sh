@@ -17,6 +17,8 @@ BUDGET_USD=${BUDGET_USD:-15}
 MY_IP=${MY_IP:?set MY_IP to your public IPv4 for the SSH rule}
 KEY_FILE="$HOME/.ssh/$NAME.pem"
 HERE="$(cd "$(dirname "$0")" && pwd)"
+# The AWS CLI is a native program: under Git Bash it needs Windows-style paths.
+if command -v cygpath >/dev/null 2>&1; then HERE_W=$(cygpath -m "$HERE"); TMP_W=$(cygpath -m "${TMPDIR:-/tmp}"); else HERE_W=$HERE; TMP_W=${TMPDIR:-/tmp}; fi
 
 export AWS_DEFAULT_REGION=$REGION
 ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
@@ -54,7 +56,7 @@ if ! aws s3api head-bucket --bucket $BUCKET 2>/dev/null; then
 fi
 aws s3api put-public-access-block --bucket $BUCKET --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true
 aws s3api put-bucket-versioning --bucket $BUCKET --versioning-configuration Status=Enabled
-aws s3api put-bucket-lifecycle-configuration --bucket $BUCKET --lifecycle-configuration "file://$HERE/s3-lifecycle.json"
+aws s3api put-bucket-lifecycle-configuration --bucket $BUCKET --lifecycle-configuration "file://$HERE_W/s3-lifecycle.json"
 
 # --- IAM role for the instance (that bucket only) ---------------------------
 ROLE=$NAME-instance
@@ -62,8 +64,8 @@ if ! aws iam get-role --role-name $ROLE >/dev/null 2>&1; then
   aws iam create-role --role-name $ROLE --assume-role-policy-document '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Service":"ec2.amazonaws.com"},"Action":"sts:AssumeRole"}]}' >/dev/null
   echo "role created: $ROLE"
 fi
-sed "s/176146985576/$ACCOUNT/g" "$HERE/iam-instance-policy.json" > /tmp/$NAME-policy.json
-aws iam put-role-policy --role-name $ROLE --policy-name $NAME-s3 --policy-document file:///tmp/$NAME-policy.json
+sed "s/176146985576/$ACCOUNT/g" "$HERE/iam-instance-policy.json" > "${TMPDIR:-/tmp}/$NAME-policy.json"
+aws iam put-role-policy --role-name $ROLE --policy-name $NAME-s3 --policy-document "file://$TMP_W/$NAME-policy.json"
 if ! aws iam get-instance-profile --instance-profile-name $ROLE >/dev/null 2>&1; then
   aws iam create-instance-profile --instance-profile-name $ROLE >/dev/null
   aws iam add-role-to-instance-profile --instance-profile-name $ROLE --role-name $ROLE
@@ -74,9 +76,13 @@ fi
 INSTANCE=$(aws ec2 describe-instances --filters Name=tag:Name,Values=$NAME Name=instance-state-name,Values=pending,running,stopping,stopped \
   --query "Reservations[0].Instances[0].InstanceId" --output text)
 if [ "$INSTANCE" = "None" ]; then
-  AMI=$(aws ssm get-parameters --names /aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id --query "Parameters[0].Value" --output text)
+  # Latest Ubuntu 24.04 LTS (owner 099720109477 = Canonical).
+  AMI=$(aws ec2 describe-images --owners 099720109477 \
+    --filters "Name=name,Values=ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-*" "Name=state,Values=available" \
+    --query "sort_by(Images,&CreationDate)[-1].ImageId" --output text)
+  [ "$AMI" != "None" ] || { echo "no Ubuntu 24.04 AMI found"; exit 1; }
   INSTANCE=$(aws ec2 run-instances --image-id $AMI --instance-type $INSTANCE_TYPE --key-name $NAME \
-    --security-group-ids $SG --iam-instance-profile Name=$ROLE --user-data "file://$HERE/user-data.sh" \
+    --security-group-ids $SG --iam-instance-profile Name=$ROLE --user-data "file://$HERE_W/user-data.sh" \
     --block-device-mappings "[{\"DeviceName\":\"/dev/sda1\",\"Ebs\":{\"VolumeSize\":$DISK_GB,\"VolumeType\":\"gp3\",\"DeleteOnTermination\":true}}]" \
     --metadata-options HttpTokens=required \
     --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=$NAME}]" "ResourceType=volume,Tags=[{Key=Name,Value=$NAME}]" \

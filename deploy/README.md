@@ -25,17 +25,15 @@ scratch. Commands are run from the PC in Git Bash unless stated otherwise.
    On a PC where an antivirus intercepts HTTPS, point the CLI at a bundle that includes its certificate
    (`AWS_CA_BUNDLE=...`), see the note at the end.
 2. `MY_IP=<your public IPv4> bash deploy/provision.sh` — prints the instance IP.
-3. Wait two minutes, then copy the code and create the server's `.env`:
+3. Wait two minutes, then create the server's `.env` from `env.production.example` with a real
+   `SECRET_KEY` (`python -c "import secrets; print(secrets.token_urlsafe(48))"`):
    ```
-   ssh -i ~/.ssh/mealtrack.pem ubuntu@<ip> 'sudo mkdir -p /srv/mealtrack && sudo chown ubuntu /srv/mealtrack'
-   scp -i ~/.ssh/mealtrack.pem deploy/env.production.example ubuntu@<ip>:/srv/mealtrack/.env
-   ssh -i ~/.ssh/mealtrack.pem ubuntu@<ip>   # then: sudo nano /srv/mealtrack/.env  (SECRET_KEY, SEED_USER_PASSWORD)
+   ssh -i ~/.ssh/mealtrack.pem ubuntu@<ip> 'sudo mkdir -p /srv/mealtrack && sudo tee /srv/mealtrack/.env >/dev/null' < my.env
    ```
-   Generate the secret with `python -c "import secrets; print(secrets.token_urlsafe(48))"`.
-4. `bash deploy/deploy.sh <ip>` — code, venv, migrations, foods, service.
-5. On the server: `sudo bash /srv/mealtrack/app/deploy/setup.sh meal.verenovotech.com afguida@gmail.com` — packages, nginx, certificate, cron.
-6. Set the first user's password: `sudo -u mealtrack /srv/mealtrack/venv/bin/python /srv/mealtrack/app/scripts/set_password.py afguida@gmail.com` (reads `.env` for the DB path).
-7. Open https://meal.verenovotech.com from a phone.
+4. `bash deploy/deploy.sh <ip>` — bootstrap (packages, swap, user), code, venv, migrations, foods.
+5. On the server: `sudo bash /srv/mealtrack/app/deploy/setup.sh meal.verenovotech.com afguida@gmail.com` — service, nginx, certificate, backup cron.
+6. Open https://meal.verenovotech.com from a phone and **register** (`ALLOW_SIGNUP=true`): no user is seeded on the server.
+   Set `ALLOW_SIGNUP=false` in `.env` and `sudo systemctl restart mealtrack` once the family is in.
 
 ## Every later release
 
