@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
 from app.calc.nutrition import Totals
-from app.calc.targets import Targets, daily_targets
+from app.calc.targets import Targets, daily_targets, deficit_for, protein_g_per_kg_for
 from app.models import Meal, MealItem, Profile, User, Weight, Workout
 
 
@@ -30,15 +30,15 @@ def targets_for(db: Session, user: User, day: date | None = None) -> Targets | N
     weight = current_weight(db, user, day)
     if profile is None or weight is None:
         return None
-    deficit = profile.deficit_kcal if profile.goal == "dimagrire" else 0.0
+    pace = profile.pace
     return daily_targets(
         profile.sex,
         profile.age,
         profile.height_cm,
         weight,
         profile.activity,
-        deficit,
-        profile.protein_g_per_kg,
+        deficit_for(pace),
+        protein_g_per_kg_for(pace),
     )
 
 

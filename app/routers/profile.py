@@ -1,4 +1,4 @@
-"""The profile: what the daily targets are computed from."""
+"""The profile: personal facts only. Deficit and protein level are derived."""
 
 from datetime import date
 from typing import Annotated
@@ -8,9 +8,10 @@ from fastapi.responses import RedirectResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.calc.targets import PACES, deficit_for, protein_g_per_kg_for
 from app.db import get_db
 from app.deps import current_user, templates
-from app.models import ACTIVITY_LEVELS, GOALS, SEXES, Profile, User, Weight
+from app.models import ACTIVITY_LEVELS, SEXES, Profile, User, Weight
 from app.services import current_weight, targets_for
 
 router = APIRouter(prefix="/profilo")
@@ -32,16 +33,14 @@ def _context(db: Session, user: User, profile: Profile | None, errors: list[str]
         "height_cm": profile.height_cm if profile else "",
         "weight_kg": weight if weight else "",
         "activity": profile.activity if profile else "leggero",
-        "goal": profile.goal if profile else "dimagrire",
-        "deficit_kcal": profile.deficit_kcal if profile else 500,
-        "protein_g_per_kg": profile.protein_g_per_kg if profile else 1.5,
+        "kg_per_week": profile.pace if profile else 0.5,
     }
     return {
         "errors": errors,
         "v": values,
         "is_new": profile is None,
         "activity_labels": ACTIVITY_LABELS,
-        "goals": GOALS,
+        "paces": PACES,
         "targets": targets_for(db, user, date.today()),
     }
 
@@ -60,9 +59,7 @@ def salva(
     height_cm: Annotated[float, Form()],
     weight_kg: Annotated[float, Form()],
     activity: Annotated[str, Form()],
-    goal: Annotated[str, Form()],
-    deficit_kcal: Annotated[float, Form()] = 500,
-    protein_g_per_kg: Annotated[float, Form()] = 1.5,
+    kg_per_week: Annotated[float, Form()],
     db: Session = Depends(get_db),
     user: User = Depends(current_user),
 ):
@@ -77,17 +74,12 @@ def salva(
         errors.append("Peso non valido (25–300 kg).")
     if activity not in ACTIVITY_LEVELS:
         errors.append("Livello di attività non valido.")
-    if goal not in GOALS:
+    if kg_per_week not in PACES:
         errors.append("Obiettivo non valido.")
-    if not 0 <= deficit_kcal <= 1500:
-        errors.append("Deficit non valido (0–1500 kcal).")
-    if not 0.5 <= protein_g_per_kg <= 3:
-        errors.append("Proteine per kg non valide (0.5–3 g).")
 
     profile = db.get(Profile, user.id)
     if errors:
-        form = dict(sex=sex, age=age, height_cm=height_cm, weight_kg=weight_kg, activity=activity,
-                    goal=goal, deficit_kcal=deficit_kcal, protein_g_per_kg=protein_g_per_kg)
+        form = dict(sex=sex, age=age, height_cm=height_cm, weight_kg=weight_kg, activity=activity, kg_per_week=kg_per_week)
         return templates.TemplateResponse(
             request, "profile/form.html", _context(db, user, profile, errors, form), status_code=422
         )
@@ -95,9 +87,12 @@ def salva(
     if profile is None:
         profile = Profile(user_id=user.id)
         db.add(profile)
-    profile.sex, profile.age, profile.height_cm = sex, age, height_cm
-    profile.activity, profile.goal = activity, goal
-    profile.deficit_kcal, profile.protein_g_per_kg = deficit_kcal, protein_g_per_kg
+    profile.sex, profile.age, profile.height_cm, profile.activity = sex, age, height_cm, activity
+    profile.kg_per_week = kg_per_week
+    # Derived values, kept for the record.
+    profile.goal = "mantenere" if kg_per_week == 0 else "dimagrire"
+    profile.deficit_kcal = deficit_for(kg_per_week)
+    profile.protein_g_per_kg = protein_g_per_kg_for(kg_per_week)
 
     # The weight is a weigh-in of today; a second save today replaces it.
     today = date.today()

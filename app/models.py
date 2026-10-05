@@ -43,9 +43,19 @@ class Profile(Base):
     age: Mapped[int] = mapped_column(Integer, nullable=False)
     height_cm: Mapped[float] = mapped_column(Float, nullable=False)
     activity: Mapped[str] = mapped_column(String(16), nullable=False)
+    # The user's choice: kg to lose per week (0 = maintain). Deficit and protein
+    # level are derived from it (app/calc/targets.py), not entered.
+    kg_per_week: Mapped[float | None] = mapped_column(Float)
+    # Derived at save time and kept for the record; older rows may predate kg_per_week.
     goal: Mapped[str] = mapped_column(String(16), nullable=False, default="dimagrire")
     deficit_kcal: Mapped[float] = mapped_column(Float, nullable=False, default=500)
     protein_g_per_kg: Mapped[float] = mapped_column(Float, nullable=False, default=1.5)
+
+    @property
+    def pace(self) -> float:
+        if self.kg_per_week is not None:
+            return self.kg_per_week
+        return 0.0 if self.goal == "mantenere" else self.deficit_kcal * 7 / 7700
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=func.now(), onupdate=func.now()
     )

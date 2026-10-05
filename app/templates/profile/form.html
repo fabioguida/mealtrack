@@ -23,16 +23,11 @@
       {% for key, label in activity_labels.items() %}<option value="{{ key }}"{% if v.activity == key %} selected{% endif %}>{{ label }}</option>{% endfor %}
     </select>
   </label>
-  <div class="fields">
-    <label>Obiettivo
-      <select name="goal">
-        <option value="dimagrire"{% if v.goal == 'dimagrire' %} selected{% endif %}>Dimagrire</option>
-        <option value="mantenere"{% if v.goal == 'mantenere' %} selected{% endif %}>Mantenere il peso</option>
-      </select>
-    </label>
-    <label>Deficit giornaliero (kcal, se dimagrisci) <input type="number" name="deficit_kcal" value="{{ v.deficit_kcal|num(0) if v.deficit_kcal != '' else '' }}" min="0" max="1500" step="50" inputmode="numeric"></label>
-    <label>Proteine (g per kg di peso) <input type="number" name="protein_g_per_kg" value="{{ v.protein_g_per_kg }}" min="0.5" max="3" step="0.1" inputmode="decimal"></label>
-  </div>
+  <label>Obiettivo
+    <select name="kg_per_week" data-test="pace">
+      {% for kg, label in paces.items() %}<option value="{{ kg }}"{% if v.kg_per_week|float == kg %} selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+  </label>
   <div class="btns"><button class="btn" type="submit">Salva</button></div>
 </form>
 
@@ -45,7 +40,11 @@
     <div><dt>Fabbisogno (TDEE)</dt><dd>{{ targets.tdee|num(0) }} kcal</dd></div>
     <div><dt>Proteine</dt><dd>{{ targets.protein_g|num(0) }} g</dd></div>
   </dl>
-  <p class="hint">Mifflin-St Jeor × fattore di attività, meno il deficit. Si ricalcola a ogni nuova pesata.</p>
+  <p class="hint" data-test="derivation">
+    Metabolismo basale (Mifflin-St Jeor) × fattore di attività = fabbisogno;
+    {% if targets.deficit_kcal > 0 %}meno {{ targets.deficit_kcal|num(0) }} kcal al giorno di deficit per il ritmo scelto{% if targets.floored %} (ridotto per non scendere sotto il metabolismo basale){% endif %}{% else %}nessun deficit, mantieni il peso{% endif %};
+    proteine {{ targets.protein_g_per_kg|num(1) }} g per kg di peso. Si ricalcola a ogni nuova pesata.
+  </p>
 </section>
 {% endif %}
 {% endblock %}

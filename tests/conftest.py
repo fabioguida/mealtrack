@@ -37,8 +37,9 @@ def make_user(db, email, with_profile=True, weight=85.0):
     db.add(u)
     db.flush()
     if with_profile:
+        # pace 500/1100 kg/week → a 500 kcal deficit and 1.5 g/kg, the suite's reference numbers
         db.add(Profile(user_id=u.id, sex="M", age=45, height_cm=180, activity="leggero",
-                       goal="dimagrire", deficit_kcal=500, protein_g_per_kg=1.5))
+                       kg_per_week=500 / 1100, goal="dimagrire", deficit_kcal=500, protein_g_per_kg=1.5))
         db.add(Weight(user_id=u.id, date=date(2026, 1, 1), kg=weight))
     db.commit()
     return u
