@@ -15,7 +15,10 @@ def _load_dotenv(path: Path) -> None:
         if not line or "=" not in line:
             continue
         key, value = line.split("=", 1)
-        os.environ.setdefault(key.strip(), value.strip())
+        value = value.strip()
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+            value = value[1:-1]  # quoted values, as bash `source` needs for "Name <addr>"
+        os.environ.setdefault(key.strip(), value)
 
 
 _load_dotenv(PROJECT_ROOT / ".env")
