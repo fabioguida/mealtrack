@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Preferenze · Meal Tracker{% endblock %}
+{% block content %}
+<p class="eyebrow">Piano alimentare</p>
+<h1>Preferenze</h1>
+<p class="hint">Cosa ti piace e cosa escludi. I piatti con un alimento o una categoria «evito» non entrano mai nel piano; quelli con «mi piace» vengono scelti più spesso.</p>
+
+<form method="post" action="/preferenze" class="categorie" data-test="categories">
+  <table>
+    <thead><tr><th>Categoria</th><th>Mi piace</th><th>Neutro</th><th>Evito</th></tr></thead>
+    <tbody>
+    {% for key, label in categories.items() %}
+      <tr>
+        <th>{{ label }}</th>
+        <td><input type="radio" name="cat_{{ key }}" value="like"{% if cat_kind[key] == 'like' %} checked{% endif %} aria-label="{{ label }}: mi piace"></td>
+        <td><input type="radio" name="cat_{{ key }}" value=""{% if cat_kind[key] == '' %} checked{% endif %} aria-label="{{ label }}: neutro"></td>
+        <td><input type="radio" name="cat_{{ key }}" value="avoid"{% if cat_kind[key] == 'avoid' %} checked{% endif %} aria-label="{{ label }}: evito"></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <div class="btns"><button class="btn" type="submit">Salva</button></div>
+</form>
+
+<h2>Alimenti</h2>
+{% if food_prefs %}
+<ul class="elenco" data-test="food-prefs">
+{% for p in food_prefs %}
+  <li>
+    <span class="nome">{{ p.food.label }} <small>{{ "mi piace" if p.kind == "like" else "evito" }}</small></span>
+    <form method="post" action="/preferenze/{{ p.id }}/elimina"><button type="submit" class="rimuovi" aria-label="Rimuovi">×</button></form>
+  </li>
+{% endfor %}
+</ul>
+{% else %}
+<p class="hint">Nessun alimento segnato. Cerca qui sotto e scegli «mi piace» o «evito».</p>
+{% endif %}
+<label class="search">Cerca un alimento
+  <input type="search" name="q" placeholder="es. cioccolato fondente" autocomplete="off" data-food-search
+         hx-get="/alimenti/cerca?mode=pref" hx-trigger="input changed delay:300ms" hx-target="#risultati">
+</label>
+<div id="risultati"></div>
+<div class="btns"><a class="btn ghost" href="/piano">Torna al piano</a></div>
+{% endblock %}

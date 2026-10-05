@@ -1,10 +1,18 @@
 {% if foods %}
 <ul class="risultati" data-test="results">
 {% for f in foods %}
+  {% if mode == 'pref' %}
+  <li class="pref">
+    <span class="nome">{{ f.label }}</span>
+    <form method="post" action="/preferenze/alimento/{{ f.id }}/like"><button type="submit" class="chip">mi piace</button></form>
+    <form method="post" action="/preferenze/alimento/{{ f.id }}/avoid"><button type="submit" class="chip">evito</button></form>
+  </li>
+  {% else %}
   <li><button type="button" hx-get="/pasti/riga?food_id={{ f.id }}" hx-target="#righe" hx-swap="beforeend">
-    <span class="nome">{{ f.name_it or f.name }}</span>
+    <span class="nome">{{ f.label }}</span>
     <span class="mono">{{ f.kcal|num }} kcal · P {{ f.protein_g|num }} · C {{ f.carbs_g|num }} · G {{ f.fat_g|num }} per 100 g{% if f.source == 'custom' %} · mio{% endif %}</span>
   </button></li>
+  {% endif %}
 {% endfor %}
 </ul>
 {% elif q|length >= 2 %}

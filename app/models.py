@@ -112,6 +112,67 @@ class Meal(Base):
     )
 
 
+class EatingSchedule(Base):
+    """One row per weekday and meal the user eats: time and share of the day's kcal."""
+
+    __tablename__ = "eating_schedules"
+    __table_args__ = (UniqueConstraint("user_id", "day_of_week", "meal_type"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    day_of_week: Mapped[int] = mapped_column(Integer, nullable=False)  # 0 = Monday
+    meal_type: Mapped[str] = mapped_column(String(12), nullable=False)
+    time: Mapped[str | None] = mapped_column(String(5))  # "07:30"
+    share: Mapped[float] = mapped_column(Float, nullable=False)  # fraction of the day's kcal
+
+
+class FoodPreference(Base):
+    __tablename__ = "food_preferences"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    food_id: Mapped[int | None] = mapped_column(ForeignKey("foods.id"))
+    category: Mapped[str | None] = mapped_column(String(32))
+    kind: Mapped[str] = mapped_column(String(8), nullable=False)  # like / avoid
+
+    food: Mapped["Food | None"] = relationship()
+
+
+class MealPlan(Base):
+    __tablename__ = "meal_plans"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    start_date: Mapped[date] = mapped_column(Date, nullable=False)
+    weeks: Mapped[int] = mapped_column(Integer, nullable=False, default=2)
+    kcal_target: Mapped[float] = mapped_column(Float, nullable=False)
+    protein_target_g: Mapped[float] = mapped_column(Float, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, server_default=func.now())
+
+    items: Mapped[list["MealPlanItem"]] = relationship(
+        back_populates="plan", cascade="all, delete-orphan", order_by="MealPlanItem.id"
+    )
+
+
+class MealPlanItem(Base):
+    __tablename__ = "meal_plan_items"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    plan_id: Mapped[int] = mapped_column(ForeignKey("meal_plans.id", ondelete="CASCADE"), nullable=False)
+    date: Mapped[date] = mapped_column(Date, nullable=False)
+    meal_type: Mapped[str] = mapped_column(String(12), nullable=False)
+    dish: Mapped[str] = mapped_column(String(120), nullable=False)
+    food_id: Mapped[int] = mapped_column(ForeignKey("foods.id"), nullable=False)
+    grams: Mapped[float] = mapped_column(Float, nullable=False)
+    kcal: Mapped[float] = mapped_column(Float, nullable=False)
+    protein_g: Mapped[float] = mapped_column(Float, nullable=False)
+    carbs_g: Mapped[float] = mapped_column(Float, nullable=False)
+    fat_g: Mapped[float] = mapped_column(Float, nullable=False)
+
+    plan: Mapped[MealPlan] = relationship(back_populates="items")
+    food: Mapped["Food"] = relationship()
+
+
 class MealPreset(Base):
     """A recurring meal saved with its quantities, recalled with one tap."""
 

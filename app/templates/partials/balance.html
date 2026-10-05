@@ -51,6 +51,19 @@
 </section>
 
 <section class="pasti-giorno">
+  {% if suggestions %}
+  <h2>Dal piano</h2>
+  <ul class="elenco suggerimenti" data-test="suggestions">
+  {% for s in suggestions %}
+    <li>
+      <span class="nome">{{ s.meal_type|capitalize }}: {{ s.dish }} <small>{% for i in s['items'] %}{{ i.food.label|truncate(30, true, '…') }} {{ i.grams|num }} g{% if not loop.last %} · {% endif %}{% endfor %}</small></span>
+      <span class="mono">{{ s.kcal|num(0) }} kcal · P {{ s.protein_g|num(0) }} g</span>
+      <form method="post" action="/piano/conferma"><input type="hidden" name="giorno" value="{{ day.isoformat() }}"><input type="hidden" name="pasto" value="{{ s.meal_type }}"><button type="submit" class="btn" style="padding:10px 14px;min-height:44px;font-size:14px">Conferma</button></form>
+    </li>
+  {% endfor %}
+  </ul>
+  {% endif %}
+
   <h2>Pasti</h2>
   {% if meals %}
   <ul class="elenco" data-test="day-meals">

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Piano · Meal Tracker{% endblock %}
+{% block content %}
+<p class="eyebrow">Piano alimentare</p>
+<h1>Due settimane</h1>
+<p class="hint">Il piano nasce dai tuoi <a href="/orari">orari</a>, dalle tue <a href="/preferenze">preferenze</a> e dal target del profilo{% if targets %} ({{ targets.kcal|num(0) }} kcal, {{ targets.protein_g|num(0) }} g di proteine al giorno){% endif %}. Le quantità sono in grammi; i pasti compaiono nel bilancio del giorno come suggerimento da confermare con un tocco.</p>
+
+<div class="btns">
+  <form method="post" action="/piano/rigenera"><button class="btn" type="submit">{{ "Rigenera il piano" if plan else "Genera il piano" }}</button></form>
+  <a class="btn ghost" href="/orari">Orari</a>
+  <a class="btn ghost" href="/preferenze">Preferenze</a>
+</div>
+
+{% if plan and days|selectattr('meals')|map(attribute='protein_g')|map('float')|list and (days|selectattr('meals')|rejectattr('protein_g', '>', plan.protein_target_g - 10)|list|length) %}
+<p class="hint" data-test="protein-note">Nei giorni segnati le proteine restano sotto il target: i piatti a base di legumi, latte o yogurt non arrivano a {{ plan.protein_target_g|num(0) }} g senza stravolgere il piatto. Aggiungi una fonte proteica (uova, pesce, pollo, yogurt greco) o abbassa i g/kg nel profilo.</p>
+{% endif %}
+{% if stale %}<p class="errors" data-test="stale">Il tuo target è cambiato di oltre il 5 % da quando il piano è stato generato: rigeneralo.</p>{% endif %}
+{% if skipped %}<p class="hint" data-test="skipped">Piatti esclusi perché mancano alimenti nel database: {{ skipped|join(', ') }}.</p>{% endif %}
+
+{% if plan %}
+<p class="mono" data-test="plan-meta">Dal {{ plan.start_date|d }}, {{ plan.weeks }} settimane · generato il {{ plan.created_at|d }} con target {{ plan.kcal_target|num(0) }} kcal, {{ plan.protein_target_g|num(0) }} g proteine</p>
+<div class="piano" data-test="plan-days">
+{% for d in days %}
+  <section class="giorno-piano{% if d.day == today %} oggi{% endif %}" data-test="plan-day">
+    {% set short = plan.protein_target_g - d.protein_g %}
+    <h2><a href="/giorno/{{ d.day.isoformat() }}">{{ d.day|d }}</a> <span class="mono">{{ d.kcal|num(0) }} kcal · P {{ d.protein_g|num(0) }} g{% if d.meals and short > 10 %} <em class="corto" data-test="protein-short">−{{ short|num(0) }} g sul target</em>{% endif %}</span></h2>
+    {% for m in d.meals %}
+    <div class="pasto-piano">
+      <span class="tipo">{{ m.meal_type|capitalize }}</span>
+      <span class="piatto"><b>{{ m.dish }}</b><br><small>{% for i in m['items'] %}{{ i.food.label|truncate(34, true, '…') }} {{ i.grams|num }} g{% if not loop.last %} · {% endif %}{% endfor %}</small></span>
+      <span class="mono">{{ m.kcal|num(0) }} kcal · P {{ m.protein_g|num(0) }} g</span>
+    </div>
+    {% endfor %}
+    {% if not d.meals %}<p class="hint">Nessun pasto pianificato (giornata senza pasti negli orari).</p>{% endif %}
+  </section>
+{% endfor %}
+</div>
+{% else %}
+<p class="hint" data-test="no-plan">Nessun piano ancora. Controlla orari e preferenze, poi genera il piano.</p>
+{% endif %}
+{% endblock %}

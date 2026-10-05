@@ -257,6 +257,14 @@ Handover feature 9. Depends on open decisions 8.3 and 8.4 being settled.
 - 8.3 rules vs AI for dish selection (plan assumes rules).
 - 8.4 meal shares and rounding steps (plan assumes 30/45/25 and 5 g as defaults, both editable in `/orari`).
 
+### Findings from the build (phase 7 done, decisions 8.3 = rules and 8.4 = 30/45/25, 5 g)
+
+- The shares are fractions of the day's target and are **not** normalised: a day whose dinner is eaten out keeps that share free, as the author's schedule needs.
+- The protein check works as the handover describes (protein up, carbs down, at constant kcal) but **cannot always reach 1.5 g/kg**: with legume-, milk- or yogurt-based dishes the protein source is too thin, and distorting the dish further would be worse than reporting the shortfall. Days short by more than 10 g are flagged on the plan page with the suggestion to add a protein source or lower the g/kg. Dish selection has a small protein-density tie-break (fish ≈ +1.9, pasta e ceci ≈ +0.5) under the rotation quotas.
+- A dish is scaled at most 2.5× its template (and at least 0.5×). A single slot above that — the Sunday family lunch at 70 % of the day — lands short by design; the page shows the real kcal.
+- Unit rounding (whole eggs, slices, fruit) is compensated on the dish's largest free ingredient, so a meal stays within a few percent of its share.
+- Template dishes live in `data/template_dishes.json` (26 dishes from PIANO_ALIMENTARE.md, USDA ids); the user's presets join them as candidates. Whole-unit masses are in that file, not in a `foods.unit_g` column.
+
 ---
 
 ## 8. Photo analysis

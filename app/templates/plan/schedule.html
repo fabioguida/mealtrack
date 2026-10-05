@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Orari · Meal Tracker{% endblock %}
+{% block content %}
+<p class="eyebrow">Piano alimentare</p>
+<h1>Orari dei pasti</h1>
+<p class="hint">Per ogni giorno: quali pasti fai, a che ora, e che quota delle calorie del giorno va a ciascuno. Le quote non devono fare 100 %: se la cena la fai fuori, lasciala vuota e il resto resta libero.</p>
+{% if errors %}<ul class="errors" data-test="errors">{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+
+<form method="post" action="/orari" class="orari">
+  <table>
+    <thead><tr><th>Giorno</th>{% for mt in meal_types %}<th>{{ mt|capitalize }}</th>{% endfor %}</tr></thead>
+    <tbody>
+    {% for dow in range(7) %}
+      <tr>
+        <th>{{ day_names[dow] }}</th>
+        {% for mt in meal_types %}{% set r = grid[dow].get(mt) %}
+        <td>
+          <label class="check"><input type="checkbox" name="eat_{{ dow }}_{{ mt }}" value="1"{% if r %} checked{% endif %}> sì</label>
+          <input type="time" name="time_{{ dow }}_{{ mt }}" value="{{ r.time if r and r.time else '' }}" aria-label="Orario">
+          <span class="quota"><input type="number" name="share_{{ dow }}_{{ mt }}" value="{{ (r.share * 100)|num(0) if r else '' }}" min="1" max="100" step="1" inputmode="numeric" aria-label="Quota"> %</span>
+        </td>
+        {% endfor %}
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <div class="btns"><button class="btn" type="submit">Salva gli orari</button><a class="btn ghost" href="/piano">Torna al piano</a></div>
+</form>
+{% endblock %}

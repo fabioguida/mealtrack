@@ -42,12 +42,13 @@ def search_foods(db: Session, user: User, q: str) -> list[Food]:
 def cerca(
     request: Request,
     q: str = "",
+    mode: str = "",
     db: Session = Depends(get_db),
     user: User = Depends(current_user),
 ):
     foods = search_foods(db, user, q)
     return templates.TemplateResponse(
-        request, "partials/food_results.html", {"foods": foods, "q": q.strip()}
+        request, "partials/food_results.html", {"foods": foods, "q": q.strip(), "mode": mode}
     )
 
 

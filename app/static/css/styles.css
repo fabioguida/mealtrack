@@ -127,6 +127,36 @@ input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px;bord
 .chip{font:inherit;font-size:14px;font-weight:600;padding:10px 14px;min-height:44px;border:1px solid var(--navy);border-radius:2px;background:var(--white);color:var(--navy);cursor:pointer}
 .chip:hover{background:var(--accent);border-color:var(--accent);color:var(--text)}
 
+/* meal plan */
+.piano{display:grid;gap:16px;margin-top:16px}
+.giorno-piano{background:var(--white);border:1px solid var(--line);padding:14px 16px}
+.giorno-piano.oggi{border-color:var(--accent);box-shadow:inset 4px 0 0 var(--accent)}
+.giorno-piano h2{margin:0 0 8px;font-size:20px;display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.giorno-piano h2 .mono{color:var(--muted);font-weight:400}
+.giorno-piano .corto{font-style:normal;color:var(--over)}
+.pasto-piano{display:grid;grid-template-columns:96px 1fr auto;gap:12px;padding:8px 0;border-top:1px solid var(--line);align-items:baseline}
+.pasto-piano .tipo{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.pasto-piano small{color:var(--muted);font-size:13px}
+.pasto-piano .mono{color:var(--muted);white-space:nowrap}
+@media (max-width:520px){.pasto-piano{grid-template-columns:1fr}.pasto-piano .mono{white-space:normal}}
+.suggerimenti li{gap:12px}
+.suggerimenti .nome{flex:1}
+.suggerimenti small{display:block;color:var(--muted);font-weight:400;font-size:13px}
+.orari table,.categorie table{width:100%;border-collapse:collapse;background:var(--white);border:1px solid var(--line);font-size:14px}
+.orari th,.orari td,.categorie th,.categorie td{padding:8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.orari thead th,.categorie thead th{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.orari td input[type=time]{min-height:40px;padding:6px 8px;font-size:14px;margin-top:4px}
+.orari .quota{display:flex;align-items:center;gap:4px;margin-top:4px;font-family:var(--mono);font-size:12px}
+.orari .quota input{width:64px;min-height:40px;padding:6px 8px;margin:0;text-align:right}
+.orari .check{display:flex;align-items:center;gap:6px;margin:0;font-size:13px}
+.orari .check input{width:auto;min-height:0;margin:0}
+.categorie td input{width:auto;min-height:0;margin:0}
+.categorie td{text-align:center}
+@media (max-width:760px){.orari{overflow-x:auto}.orari table{min-width:640px}}
+.risultati li.pref{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)}
+.risultati li.pref .nome{flex:1}
+.risultati li.pref form{margin:0}
+
 /* weights and workouts */
 .riga-form{display:grid;grid-template-columns:1fr 1fr auto;gap:0 16px;align-items:end}
 .riga-form .btn{margin-bottom:14px}
