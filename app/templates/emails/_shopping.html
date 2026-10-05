@@ -1,0 +1,8 @@
+{% for g in groups %}
+<h3 style="margin:18px 0 6px;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#56646F">{{ g.name }}</h3>
+<table style="border-collapse:collapse;width:100%">
+{% for it in g['items'] %}
+  <tr><td style="padding:6px 0;border-bottom:1px solid #DCE2E7">{{ it.food.label|truncate(60, true, '…') }}</td><td style="padding:6px 0;border-bottom:1px solid #DCE2E7;text-align:right;white-space:nowrap;font-weight:600">{{ it.display }}</td></tr>
+{% endfor %}
+</table>
+{% endfor %}

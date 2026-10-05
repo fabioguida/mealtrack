@@ -6,7 +6,7 @@ computed at save time, so editing a food later does not rewrite past meals.
 
 from datetime import date, datetime
 
-from sqlalchemy import Date, DateTime, Float, ForeignKey, Integer, String, UniqueConstraint, func
+from sqlalchemy import Boolean, Date, DateTime, Float, ForeignKey, Integer, String, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
@@ -61,6 +61,35 @@ class Profile(Base):
     )
 
     user: Mapped[User] = relationship(back_populates="profile")
+
+
+class NotificationSettings(Base):
+    """Which emails a user gets. No row = everything on (the family default)."""
+
+    __tablename__ = "notification_settings"
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
+    daily_shopping: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    weekly_shopping: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    progress: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=func.now(), onupdate=func.now()
+    )
+
+
+class EmailLog(Base):
+    """One row per email sent (or failed), so a cron rerun never sends twice."""
+
+    __tablename__ = "email_log"
+    __table_args__ = (UniqueConstraint("user_id", "kind", "period"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    kind: Mapped[str] = mapped_column(String(24), nullable=False)   # daily | weekly | test
+    period: Mapped[str] = mapped_column(String(32), nullable=False)  # the day or week it covers
+    sent_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, server_default=func.now())
+    status: Mapped[str] = mapped_column(String(16), nullable=False)  # sent | failed | skipped
+    detail: Mapped[str | None] = mapped_column(String(255))
 
 
 class Weight(Base):

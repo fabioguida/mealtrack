@@ -7,7 +7,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.auth import LoginRequired
 from app.deps import ProfileRequired
-from app.routers import auth, balance, foods, meals, photos, plan, presets, profile, weights, workouts
+from app.routers import auth, balance, foods, meals, notifications, photos, plan, presets, profile, weights, workouts
 
 app = FastAPI(title="Meal Tracker")
 app.mount(
@@ -25,6 +25,7 @@ app.include_router(workouts.router)
 app.include_router(presets.router)
 app.include_router(plan.router)
 app.include_router(photos.router)
+app.include_router(notifications.router)
 
 
 def _redirect(request: Request, url: str) -> Response:

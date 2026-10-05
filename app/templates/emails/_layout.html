@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8"><title>{{ title }}</title></head>
+<body style="margin:0;background:#F4F6F8;font-family:'Instrument Sans',Arial,sans-serif;color:#0F1C2A;font-size:16px;line-height:1.5">
+<div style="max-width:560px;margin:0 auto;padding:24px 16px">
+  <p style="margin:0 0 4px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#56646F">Meal Tracker</p>
+  <h1 style="margin:0 0 16px;font-size:26px;color:#0F2A44">{{ title }}</h1>
+  <div style="background:#fff;border:1px solid #DCE2E7;padding:16px">
+  {% block body %}{% endblock %}
+  </div>
+  <p style="margin:16px 0 0;font-size:13px;color:#56646F">
+    <a href="{{ app_url }}/" style="color:#0F2A44">Apri l'app</a> ·
+    <a href="{{ app_url }}/spesa" style="color:#0F2A44">Lista della spesa</a> ·
+    <a href="{{ app_url }}/notifiche" style="color:#0F2A44">Gestisci le email</a><br>
+    L'app mostra stime, non prescrizioni mediche.
+  </p>
+</div>
+</body></html>

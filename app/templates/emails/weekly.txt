@@ -1,0 +1,8 @@
+{% if groups %}SPESA DELLA SETTIMANA, da {{ monday|d }} a {{ sunday|d }}
+
+{% include "emails/_shopping.txt" %}
+{% else %}Per la settimana da {{ monday|d }} non c'è un piano: generalo nell'app per avere la lista.
+
+{% endif %}{% if progress %}LA SETTIMANA APPENA FINITA
+{% include "emails/_progress.txt" %}{% endif %}
+Apri l'app: {{ app_url }}/ — lista della spesa: {{ app_url }}/spesa — gestisci le email: {{ app_url }}/notifiche

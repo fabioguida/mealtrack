@@ -1,0 +1,22 @@
+{% set t = progress.today %}
+<h3 style="margin:18px 0 6px;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#56646F">Oggi, {{ t.day|d }}</h3>
+{% if t.eaten_kcal is not none %}
+<p style="margin:0 0 6px"><b style="font-size:22px;color:{{ '#C8322B' if t.eaten_kcal > t.allowed_kcal else '#2E8B57' }}">{{ t.eaten_kcal|num(0) }}</b> su {{ t.allowed_kcal|num(0) }} kcal
+({{ (t.allowed_kcal - t.eaten_kcal)|num(0) }} {{ 'rimaste' if t.eaten_kcal <= t.allowed_kcal else 'oltre' }}) · proteine <b>{{ t.protein_g|num(0) }}</b> su {{ t.protein_target_g|num(0) }} g</p>
+{% else %}
+<p style="margin:0 0 6px;color:#56646F">Nessun pasto registrato oggi.</p>
+{% endif %}
+<h3 style="margin:18px 0 6px;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#56646F">Ultimi 7 giorni</h3>
+<p style="margin:0 0 8px">{{ progress.trend.text }}</p>
+<table style="border-collapse:collapse;width:100%;font-size:14px">
+{% for l in progress.lines %}
+  <tr><td style="padding:4px 0;border-bottom:1px solid #DCE2E7">{{ l.day|d }}</td>
+  <td style="padding:4px 0;border-bottom:1px solid #DCE2E7;text-align:right">{% if l.eaten_kcal is not none %}<span style="color:{{ '#C8322B' if l.eaten_kcal > l.allowed_kcal else '#2E8B57' }}">{{ l.eaten_kcal|num(0) }}</span> / {{ l.allowed_kcal|num(0) }} kcal · P {{ l.protein_g|num(0) }} g{% else %}<span style="color:#56646F">non registrato</span>{% endif %}</td></tr>
+{% endfor %}
+</table>
+<p style="margin:8px 0 0;color:#56646F">Giorni di fila registrati: <b>{{ progress.streak }}</b></p>
+{% if progress.weights %}
+<h3 style="margin:18px 0 6px;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#56646F">Peso</h3>
+<p style="margin:0">{% for d, kg in progress.weights %}{{ d|d }}: <b>{{ kg|num(1) }}</b> kg{% if not loop.last %} · {% endif %}{% endfor %}
+{% if progress.weight_delta is not none %}<br>Variazione sulle ultime pesate: <b>{{ '%+.1f'|format(progress.weight_delta) }} kg</b>{% endif %}</p>
+{% endif %}

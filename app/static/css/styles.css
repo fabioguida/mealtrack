@@ -184,6 +184,16 @@ form.foto{display:flex;align-items:center;gap:12px;margin:0 0 12px}
 .risultati li.pref .nome{flex:1}
 .risultati li.pref form{margin:0}
 
+/* notifications and shopping */
+.notifiche .check{display:flex;align-items:flex-start;gap:10px;margin:0 0 10px;font-size:15px;color:var(--text)}
+.notifiche .check input{width:auto;min-height:0;margin:4px 0 0}
+.spesa{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.spesa li{border-bottom:1px solid var(--line)}
+.spesa .check{display:flex;align-items:center;gap:12px;margin:0;padding:12px 0;font-size:16px;color:var(--text);cursor:pointer}
+.spesa .check input{width:22px;height:22px;min-height:0;margin:0}
+.spesa .check .nome{flex:1}
+.spesa .check:has(input:checked) .nome{text-decoration:line-through;color:var(--muted)}
+
 /* weights and workouts */
 .riga-form{display:grid;grid-template-columns:1fr 1fr auto;gap:0 16px;align-items:end}
 .riga-form .btn{margin-bottom:14px}

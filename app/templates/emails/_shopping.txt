@@ -1,0 +1,4 @@
+{% for g in groups %}{{ g.name|upper }}
+{% for it in g['items'] %}  - {{ it.food.label|truncate(48, true, '…') }}: {{ it.display }}
+{% endfor %}
+{% endfor %}

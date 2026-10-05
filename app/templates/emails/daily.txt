@@ -1,0 +1,10 @@
+{% if groups %}SPESA PER DOMANI, {{ tomorrow|d }}
+
+{% include "emails/_shopping.txt" %}
+{% elif progress and progress.tomorrow_meals %}Domani ({{ tomorrow|d }}) il piano non richiede acquisti nuovi.
+
+{% endif %}{% if progress and progress.tomorrow_meals %}DOMANI NEL PIANO
+{% for m in progress.tomorrow_meals %}  {{ m.meal_type|capitalize }}: {{ m.dish }} ({{ m.kcal|num(0) }} kcal)
+{% endfor %}
+{% endif %}{% if progress %}{% include "emails/_progress.txt" %}{% endif %}
+Apri l'app: {{ app_url }}/ — lista della spesa: {{ app_url }}/spesa — gestisci le email: {{ app_url }}/notifiche

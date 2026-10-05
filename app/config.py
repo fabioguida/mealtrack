@@ -41,3 +41,9 @@ PHOTO_PROVIDER = os.environ.get("PHOTO_PROVIDER", "none")
 PHOTO_MAX_PX = int(os.environ.get("PHOTO_MAX_PX", "1600"))
 PHOTO_CANDIDATES = int(os.environ.get("PHOTO_CANDIDATES", "8"))
 CACHE_DIR = PROJECT_ROOT / "data" / "cache"
+
+# Emails: "console" prints them (development, tests); "ses" sends through Amazon SES
+# with the instance's role. APP_URL is used for the links inside the emails.
+EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "console")
+EMAIL_FROM = os.environ.get("EMAIL_FROM", "Meal Tracker <meal@verenovotech.com>")
+APP_URL = os.environ.get("APP_URL", "http://127.0.0.1:8000").rstrip("/")

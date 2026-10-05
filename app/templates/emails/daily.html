@@ -1,0 +1,13 @@
+{% extends "emails/_layout.html" %}
+{% set title = ("Spesa per domani" if groups else "Come va oggi") %}
+{% block body %}
+{% if groups %}
+<p style="margin:0;color:#56646F">Per i pasti di domani, {{ tomorrow|d }}.</p>
+{% include "emails/_shopping.html" %}
+{% endif %}
+{% if progress and progress.tomorrow_meals %}
+<h3 style="margin:18px 0 6px;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#56646F">Domani nel piano</h3>
+<p style="margin:0">{% for m in progress.tomorrow_meals %}<b>{{ m.meal_type|capitalize }}</b>: {{ m.dish }} ({{ m.kcal|num(0) }} kcal){% if not loop.last %}<br>{% endif %}{% endfor %}</p>
+{% endif %}
+{% if progress %}{% include "emails/_progress.html" %}{% endif %}
+{% endblock %}

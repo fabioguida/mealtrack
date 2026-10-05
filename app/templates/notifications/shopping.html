@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Spesa · Meal Tracker{% endblock %}
+{% block content %}
+<p class="eyebrow">Lista della spesa</p>
+<h1>{% if periodo == 'settimana' %}La settimana {{ start|d }} – {{ end|d }}{% elif periodo == 'oggi' %}Oggi{% else %}Domani, {{ start|d }}{% endif %}</h1>
+<div class="btns" style="margin-top:0">
+  <a class="btn{% if periodo != 'domani' %} ghost{% endif %}" href="/spesa?periodo=domani">Domani</a>
+  <a class="btn{% if periodo != 'settimana' %} ghost{% endif %}" href="/spesa?periodo=settimana">Settimana prossima</a>
+  <a class="btn{% if periodo != 'oggi' %} ghost{% endif %}" href="/spesa?periodo=oggi">Oggi</a>
+</div>
+<p class="hint">Dai pasti del piano, quantità arrotondate a quello che si compra. Spunta mentre fai la spesa.</p>
+
+{% if groups %}
+{% for g in groups %}
+<h2>{{ g.name }}</h2>
+<ul class="spesa" data-test="group">
+{% for it in g['items'] %}
+  <li><label class="check"><input type="checkbox"> <span class="nome">{{ it.food.label }}</span> <b>{{ it.display }}</b></label></li>
+{% endfor %}
+</ul>
+{% endfor %}
+{% else %}
+<p class="hint" data-test="empty">Niente da comprare: nessun pasto pianificato in questo periodo. <a href="/piano">Genera il piano</a>.</p>
+{% endif %}
+{% endblock %}

@@ -38,10 +38,22 @@ if [ ! -d /etc/letsencrypt/live/$DOMAIN ]; then
   certbot --nginx --non-interactive --agree-tos -m "$EMAIL" -d "$DOMAIN" --redirect
 fi
 
+# Italian clock for cron (emails at 18:00 and Saturday 08:00 local time)
+timedatectl set-timezone Europe/Rome
+
 # weekly backup (Sunday 03:30) and its log
 install -m 755 $APP/deploy/backup.sh /usr/local/bin/mealtrack-backup
 echo "30 3 * * 0 mealtrack /usr/local/bin/mealtrack-backup >> $DATA/backup.log 2>&1" > /etc/cron.d/mealtrack-backup
 touch $DATA/backup.log && chown mealtrack:mealtrack $DATA/backup.log
+
+# emails: every day 18:00 (tomorrow's shopping + progress), Saturday 08:00 (the week's shopping)
+install -m 755 $APP/deploy/send_emails.sh /usr/local/bin/mealtrack-send
+cat > /etc/cron.d/mealtrack-emails <<CRON
+0 18 * * * mealtrack /usr/local/bin/mealtrack-send daily >> $DATA/emails.log 2>&1
+0 8 * * 6 mealtrack /usr/local/bin/mealtrack-send weekly >> $DATA/emails.log 2>&1
+CRON
+touch $DATA/emails.log && chown mealtrack:mealtrack $DATA/emails.log
+systemctl restart cron
 
 sleep 2; systemctl is-active mealtrack && curl -sf http://127.0.0.1:8000/health && echo
 echo "setup done: https://$DOMAIN"

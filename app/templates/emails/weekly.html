@@ -1,0 +1,14 @@
+{% extends "emails/_layout.html" %}
+{% set title = "La spesa della settimana" %}
+{% block body %}
+{% if groups %}
+<p style="margin:0;color:#56646F">Per i pasti da {{ monday|d }} a {{ sunday|d }}.</p>
+{% include "emails/_shopping.html" %}
+{% else %}
+<p style="margin:0">Per la settimana da {{ monday|d }} non c'è un piano: <a href="{{ app_url }}/piano" style="color:#0F2A44">generalo nell'app</a> per avere la lista.</p>
+{% endif %}
+{% if progress %}
+<h2 style="margin:24px 0 0;font-size:18px;color:#0F2A44">La settimana appena finita</h2>
+{% include "emails/_progress.html" %}
+{% endif %}
+{% endblock %}

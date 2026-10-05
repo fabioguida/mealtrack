@@ -4,14 +4,30 @@
     {
       "Sid": "BucketList",
       "Effect": "Allow",
-      "Action": ["s3:ListBucket", "s3:GetBucketLocation"],
+      "Action": [
+        "s3:ListBucket",
+        "s3:GetBucketLocation"
+      ],
       "Resource": "arn:aws:s3:::mealtrack-176146985576"
     },
     {
       "Sid": "Objects",
       "Effect": "Allow",
-      "Action": ["s3:PutObject", "s3:GetObject", "s3:DeleteObject"],
+      "Action": [
+        "s3:PutObject",
+        "s3:GetObject",
+        "s3:DeleteObject"
+      ],
       "Resource": "arn:aws:s3:::mealtrack-176146985576/*"
+    },
+    {
+      "Sid": "SendMail",
+      "Effect": "Allow",
+      "Action": [
+        "ses:SendEmail",
+        "ses:SendRawEmail"
+      ],
+      "Resource": "arn:aws:ses:eu-west-1:176146985576:identity/verenovotech.com"
     }
   ]
 }
