@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}{{ meal.meal_type|capitalize }} · Meal Tracker{% endblock %}
+{% block content %}
+<p class="eyebrow">{{ meal.datetime|dt }}</p>
+<h1>{{ meal.meal_type|capitalize }}</h1>
+
+<ul class="voci" data-test="items">
+{% for i in meal.items %}
+  <li><span class="nome">{{ i.food.name_it or i.food.name }}</span><span class="mono">{{ i.grams|num }} g · {{ i.kcal|num }} kcal</span></li>
+{% endfor %}
+</ul>
+
+{% include "partials/totals.html" %}
+
+<div class="btns">
+  <a class="btn" href="/pasti/{{ meal.id }}/modifica">Modifica</a>
+  <form method="post" action="/pasti/{{ meal.id }}/elimina" data-confirm="Eliminare questo pasto?">
+    <button class="btn ghost" type="submit">Elimina</button>
+  </form>
+  <a class="btn ghost" href="/pasti">Tutti i pasti</a>
+</div>
+{% endblock %}

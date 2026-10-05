@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% set heading = "Modifica pasto" if meal else "Nuovo pasto" %}
+{% block title %}{{ heading }} · Meal Tracker{% endblock %}
+{% block content %}
+<p class="eyebrow">Pasto</p>
+<h1>{{ heading }}</h1>
+
+{% if errors %}
+<ul class="errors" data-test="errors">{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+{% endif %}
+
+<form method="post" action="{{ '/pasti/' ~ meal.id if meal else '/pasti' }}" class="meal-form"
+      hx-post="/pasti/totali" hx-trigger="change from:#righe, input delay:400ms from:#righe"
+      hx-target="#totali" hx-swap="innerHTML">
+  <div class="fields">
+    <label>Data e ora
+      <input type="datetime-local" name="when" value="{{ when.strftime('%Y-%m-%dT%H:%M') }}" required>
+    </label>
+    <label>Tipo
+      <select name="meal_type">
+        {% for t in meal_types %}<option value="{{ t }}"{% if t == meal_type %} selected{% endif %}>{{ t|capitalize }}</option>{% endfor %}
+      </select>
+    </label>
+  </div>
+
+  <h2>Alimenti</h2>
+  <div class="righe" id="righe">
+    {% for food, grams in items %}{% include "partials/item_row.html" %}{% endfor %}
+  </div>
+  <div id="totali">{% include "partials/totals.html" %}</div>
+
+  <label class="search">Aggiungi un alimento
+    <input type="search" name="q" placeholder="es. pasta, yogurt greco" autocomplete="off" data-food-search
+           hx-get="/alimenti/cerca" hx-trigger="input changed delay:300ms" hx-target="#risultati">
+  </label>
+  <div id="risultati"></div>
+  <p class="hint">Non lo trovi? <a href="/alimenti/nuovo">Crea un alimento</a></p>
+
+  <div class="btns">
+    <button class="btn" type="submit">Salva</button>
+    {% if meal %}<a class="btn ghost" href="/pasti/{{ meal.id }}">Annulla</a>{% endif %}
+  </div>
+</form>
+{% endblock %}

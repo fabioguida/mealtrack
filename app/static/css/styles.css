@@ -1,0 +1,82 @@
+/* Self-hosted fonts (SIL Open Font Licence, see fonts/OFL-*.txt). Nothing is fetched from outside. */
+@font-face{font-family:'Archivo';font-style:normal;font-weight:100 900;font-stretch:62% 125%;font-display:swap;src:url(../fonts/archivo-variable.woff2) format('woff2')}
+@font-face{font-family:'Instrument Sans';font-style:normal;font-weight:400 700;font-stretch:100%;font-display:swap;src:url(../fonts/instrument-sans-variable.woff2) format('woff2')}
+@font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:400;font-display:swap;src:url(../fonts/ibm-plex-mono-400.woff2) format('woff2')}
+@font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:500;font-display:swap;src:url(../fonts/ibm-plex-mono-500.woff2) format('woff2')}
+
+/* Palette and type from the Vere Novo site; --ok and --over are this app's two state colours. */
+:root{
+  --ink:#07131F; --navy:#0F2A44; --paper:#F4F6F8; --white:#FFFFFF; --text:#0F1C2A; --muted:#56646F; --line:#DCE2E7;
+  --accent:#F5D35A; --on-dark:#E9EEF2; --on-dark-muted:#9DB0C2; --dark-line:rgba(255,255,255,.14);
+  --ok:#2E8B57; --over:#C8322B;
+  --display:'Archivo',system-ui,sans-serif; --body:'Instrument Sans',system-ui,sans-serif; --mono:'IBM Plex Mono',ui-monospace,monospace;
+  color-scheme: light;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--text);font-family:var(--body);font-size:17px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+h1,h2,h3{margin:0;font-family:var(--display);font-stretch:118%;font-weight:700;letter-spacing:-.025em;line-height:.96;text-wrap:balance}
+h1{font-size:clamp(34px,6vw,56px);color:var(--navy);margin:10px 0 24px}
+h2{font-size:clamp(22px,3vw,28px);color:var(--navy);margin:32px 0 12px}
+.wrap{width:min(960px,100% - 48px);margin-inline:auto}
+@media (max-width:640px){.wrap{width:calc(100% - 32px)}}
+main.wrap{padding-block:32px 48px}
+.eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.mono{font-family:var(--mono);font-size:12px;letter-spacing:.04em;font-variant-numeric:tabular-nums}
+.hint{color:var(--muted);font-size:15px;margin:10px 0}
+
+/* nav */
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;background:rgba(7,19,31,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);color:var(--on-dark);border-bottom:1px solid var(--dark-line)}
+nav .wrap{height:60px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{font-family:var(--display);font-stretch:125%;font-weight:800;font-size:16px;letter-spacing:.08em;color:#fff}
+.links{display:flex;gap:28px;font-size:14.5px;font-weight:500;color:var(--on-dark-muted)}
+.links a:hover{color:#fff}
+.links a.cta{color:#fff;border-bottom:2px solid var(--accent);padding-bottom:2px}
+.menu{display:none;font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--on-dark);background:transparent;border:1px solid rgba(255,255,255,.35);padding:10px 12px;border-radius:2px;cursor:pointer;min-height:44px}
+@media (max-width:640px){.links{display:none}.menu{display:inline-block}
+  nav.open .links{display:flex;flex-direction:column;gap:0;position:fixed;top:60px;left:0;right:0;background:var(--ink);padding:24px;font-size:22px;font-weight:600;color:#fff;z-index:39}
+  nav.open .links a{padding:18px 0;border-bottom:1px solid var(--dark-line)}nav.open .links a.cta{color:var(--accent)}}
+
+/* buttons */
+.btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:30px;align-items:center}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:14px 22px;min-height:48px;border-radius:2px;border:0;font:inherit;font-weight:600;font-size:16px;background:var(--accent);color:var(--text);cursor:pointer;transition:transform .2s ease,box-shadow .2s ease}
+.btn:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(245,211,90,.25)}
+.btn.ghost{background:transparent;color:var(--navy);border:1px solid var(--navy)}
+.btn.ghost:hover{box-shadow:none}
+
+/* forms */
+label{display:block;font-size:14px;color:var(--muted);margin-bottom:14px}
+input,select{display:block;width:100%;margin-top:6px;padding:12px 14px;min-height:48px;font:inherit;font-size:17px;color:var(--text);background:var(--white);border:1px solid var(--line);border-radius:2px}
+input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--navy)}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:0 24px}
+@media (max-width:520px){.fields{grid-template-columns:1fr}}
+.errors{list-style:none;margin:0 0 20px;padding:14px 16px;border-left:3px solid var(--over);background:#FBECEB;color:#7A1F1A;font-size:15px}
+.errors li+li{margin-top:6px}
+
+/* meal item rows */
+.righe{border-top:1px solid var(--line)}
+.riga{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.riga .nome{font-weight:500}
+.riga .grammi{display:flex;align-items:center;gap:6px;margin:0;font-family:var(--mono);font-size:13px}
+.riga .grammi input{width:92px;margin:0;text-align:right}
+.rimuovi{min-width:44px;min-height:44px;border:0;background:transparent;color:var(--muted);font-size:22px;cursor:pointer}
+.rimuovi:hover{color:var(--over)}
+
+/* totals */
+.totali{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:12px;margin:20px 0 28px;padding:16px;background:var(--white);border:1px solid var(--line)}
+.totali div{margin:0}
+.totali dt{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.totali dd{margin:4px 0 0;font-family:var(--display);font-stretch:118%;font-weight:700;font-size:22px;color:var(--navy);font-variant-numeric:tabular-nums}
+.totali .big dd{font-size:36px;line-height:1}
+@media (max-width:520px){.totali{grid-template-columns:1fr 1fr}.totali .big{grid-column:1/-1}}
+
+/* search results and lists */
+.risultati,.voci,.elenco{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.risultati li button,.voci li,.elenco li a{display:flex;flex-direction:column;gap:2px;width:100%;padding:12px 0;border:0;border-bottom:1px solid var(--line);background:transparent;font:inherit;text-align:left;cursor:pointer}
+.risultati li button:hover .nome,.elenco li a:hover .nome{color:var(--navy);text-decoration:underline}
+.risultati .mono,.voci .mono,.elenco .mono{color:var(--muted)}
+.voci li,.elenco li a{flex-direction:row;justify-content:space-between;align-items:baseline;gap:16px}
+.elenco small{display:block;font-size:13px;color:var(--muted);font-weight:400}
+
+footer.wrap{padding:24px 0 40px;border-top:1px solid var(--line);color:var(--muted)}
+footer p{margin:0}

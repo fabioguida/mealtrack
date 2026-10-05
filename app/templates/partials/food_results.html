@@ -1,0 +1,12 @@
+{% if foods %}
+<ul class="risultati" data-test="results">
+{% for f in foods %}
+  <li><button type="button" hx-get="/pasti/riga?food_id={{ f.id }}" hx-target="#righe" hx-swap="beforeend">
+    <span class="nome">{{ f.name_it or f.name }}</span>
+    <span class="mono">{{ f.kcal|num }} kcal · P {{ f.protein_g|num }} · C {{ f.carbs_g|num }} · G {{ f.fat_g|num }} per 100 g{% if f.source == 'custom' %} · mio{% endif %}</span>
+  </button></li>
+{% endfor %}
+</ul>
+{% elif q|length >= 2 %}
+<p class="hint" data-test="no-results">Nessun alimento trovato per "{{ q }}".</p>
+{% endif %}

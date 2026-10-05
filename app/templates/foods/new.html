@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Nuovo alimento · Meal Tracker{% endblock %}
+{% block content %}
+<p class="eyebrow">Alimento personale</p>
+<h1>Nuovo alimento</h1>
+<p class="hint">Valori per 100 g, come sull'etichetta.</p>
+
+{% if errors %}
+<ul class="errors" data-test="errors">{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+{% endif %}
+
+<form method="post" action="/alimenti" class="food-form">
+  <label>Nome <input type="text" name="name" required maxlength="255" placeholder="es. Pasta e ceci della nonna"></label>
+  <div class="fields">
+    <label>kcal <input type="number" name="kcal" min="0" step="any" inputmode="decimal" required></label>
+    <label>Proteine (g) <input type="number" name="protein_g" min="0" step="any" inputmode="decimal" required></label>
+    <label>Carboidrati (g) <input type="number" name="carbs_g" min="0" step="any" inputmode="decimal" required></label>
+    <label>Grassi (g) <input type="number" name="fat_g" min="0" step="any" inputmode="decimal" required></label>
+  </div>
+  <div class="btns">
+    <button class="btn" type="submit">Salva</button>
+    <a class="btn ghost" href="/pasti/nuovo">Annulla</a>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>{% block title %}Meal Tracker{% endblock %}</title>
+<link rel="preload" href="/static/fonts/archivo-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/static/css/styles.css">
+<script src="/static/js/htmx.min.js" defer></script>
+<script src="/static/js/app.js" defer></script>
+</head>
+<body>
+<nav aria-label="Principale"><div class="wrap">
+  <a class="brand" href="/">Meal Tracker</a>
+  <div class="links" id="navlinks">
+    <a href="/">Oggi</a>
+    <a href="/pasti">Pasti</a>
+    <a class="cta" href="/pasti/nuovo">Nuovo pasto</a>
+  </div>
+  <button class="menu" type="button" aria-label="Apri il menu" aria-expanded="false" aria-controls="navlinks">MENU</button>
+</div></nav>
+<main class="wrap">
+{% block content %}{% endblock %}
+</main>
+<footer class="wrap"><p class="mono">L'app mostra stime, non prescrizioni mediche.</p></footer>
+</body>
+</html>

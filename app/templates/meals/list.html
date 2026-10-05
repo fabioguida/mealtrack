@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Pasti · Meal Tracker{% endblock %}
+{% block content %}
+<p class="eyebrow">Registro</p>
+<h1>Pasti</h1>
+
+{% if meals %}
+<ul class="elenco" data-test="meals">
+{% for m in meals %}
+  <li><a href="/pasti/{{ m.id }}">
+    <span class="nome">{{ m.meal_type|capitalize }} <small>{{ m.datetime|dt }}</small></span>
+    <span class="mono">{{ m.items|sum(attribute='kcal')|num }} kcal · P {{ m.items|sum(attribute='protein_g')|num }} g</span>
+  </a></li>
+{% endfor %}
+</ul>
+{% else %}
+<p class="hint" data-test="empty">Nessun pasto registrato.</p>
+{% endif %}
+
+<div class="btns"><a class="btn" href="/pasti/nuovo">Nuovo pasto</a></div>
+{% endblock %}
