@@ -11,6 +11,7 @@ from app.calc.trend import weekly_trend
 from app.db import get_db
 from app.deps import ProfileRequired, current_user, templates
 from app.models import User
+from app.routers.presets import user_presets
 from app.services import day_meals, day_workouts, meals_totals, targets_for, week_days
 
 router = APIRouter()
@@ -35,6 +36,7 @@ def _render(request: Request, db: Session, user: User, day: date):
         "balance": assess(meals_totals(meals), targets, extra_kcal=extra),
         "targets": targets,
         "trend": weekly_trend(week_days(db, user, day)),
+        "presets": user_presets(db, user),
     }
     # HTMX day navigation swaps only the balance block.
     name = "partials/balance.html" if request.headers.get("HX-Request") else "balance/day.html"

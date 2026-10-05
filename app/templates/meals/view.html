@@ -6,7 +6,7 @@
 
 <ul class="voci" data-test="items">
 {% for i in meal.items %}
-  <li><span class="nome">{{ i.food.name_it or i.food.name }}</span><span class="mono">{{ i.grams|num }} g · {{ i.kcal|num }} kcal</span></li>
+  <li><span class="nome">{{ i.food.label }}</span><span class="mono">{{ i.grams|num }} g · {{ i.kcal|num }} kcal</span></li>
 {% endfor %}
 </ul>
 
@@ -19,4 +19,9 @@
   </form>
   <a class="btn ghost" href="/pasti">Tutti i pasti</a>
 </div>
+
+<form method="post" action="/pasti/{{ meal.id }}/salva-preset" class="salva-preset">
+  <label>Salva come preset <input type="text" name="name" maxlength="120" placeholder="es. Avocado toast con uova"></label>
+  <button class="btn ghost" type="submit">Salva come preset</button>
+</form>
 {% endblock %}

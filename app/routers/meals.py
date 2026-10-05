@@ -11,8 +11,9 @@ from sqlalchemy.orm import Session, selectinload
 from app.calc.nutrition import item_values, meal_totals
 from app.db import get_db
 from app.deps import current_user, templates
-from app.models import INPUT_METHODS, MEAL_TYPES, Food, Meal, MealItem, User
+from app.models import MEAL_TYPES, Food, Meal, MealItem, MealPreset, MealPresetItem, User
 from app.routers.foods import visible_foods
+from app.services import meal_type_for, usual_grams
 
 router = APIRouter(prefix="/pasti")
 
@@ -107,8 +108,11 @@ def riga(
     food = db.scalar(visible_foods(user).where(Food.id == food_id))
     if food is None:
         raise HTTPException(404)
+    usual = usual_grams(db, user, food.id)
     return templates.TemplateResponse(
-        request, "partials/item_row.html", {"food": food, "grams": 100}
+        request,
+        "partials/item_row.html",
+        {"food": food, "grams": usual or 100, "usual": usual},
     )
 
 
@@ -134,9 +138,10 @@ def _save(
     when: datetime,
     meal_type: str,
     items: list[tuple[Food, float]],
+    input_method: str = "manual",
 ) -> Meal:
     if meal is None:
-        meal = Meal(user_id=user.id, input_method="manual")
+        meal = Meal(user_id=user.id, input_method=input_method)
         db.add(meal)
     meal.datetime = when
     meal.meal_type = meal_type
@@ -188,6 +193,51 @@ def crea(
     user: User = Depends(current_user),
 ):
     return _handle_form(request, db, user, None, when, meal_type, food_id, grams)
+
+
+@router.post("/da-preset/{preset_id}")
+def da_preset(
+    preset_id: int,
+    giorno: str | None = None,
+    db: Session = Depends(get_db),
+    user: User = Depends(current_user),
+):
+    """One tap: today's meal (or the requested day's) from a preset, then edit."""
+    preset = db.scalar(
+        select(MealPreset)
+        .options(selectinload(MealPreset.items).selectinload(MealPresetItem.food))
+        .where(MealPreset.id == preset_id, MealPreset.user_id == user.id)
+    )
+    if preset is None:
+        raise HTTPException(404)
+    now = datetime.now().replace(second=0, microsecond=0)
+    if giorno:
+        try:
+            now = datetime.combine(date.fromisoformat(giorno), now.time())
+        except ValueError:
+            pass
+    items = [(i.food, i.grams) for i in preset.items]
+    meal = _save(db, user, None, now, meal_type_for(now), items, input_method="preset")
+    return RedirectResponse(f"/pasti/{meal.id}/modifica", status_code=303)
+
+
+@router.post("/{meal_id}/salva-preset")
+def salva_preset(
+    meal_id: int,
+    name: Annotated[str, Form()],
+    db: Session = Depends(get_db),
+    user: User = Depends(current_user),
+):
+    meal = _own_meal(db, user, meal_id)
+    name = name.strip() or f"{meal.meal_type.capitalize()} del {meal.datetime:%d/%m}"
+    preset = MealPreset(
+        user_id=user.id,
+        name=name[:120],
+        items=[MealPresetItem(food_id=i.food_id, grams=i.grams) for i in meal.items],
+    )
+    db.add(preset)
+    db.commit()
+    return RedirectResponse("/preset", status_code=303)
 
 
 @router.get("/{meal_id}")

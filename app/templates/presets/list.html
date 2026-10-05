@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Preset · Meal Tracker{% endblock %}
+{% block content %}
+<p class="eyebrow">Pasti ricorrenti</p>
+<h1>Preset</h1>
+<p class="hint">Un preset è un pasto fisso con le sue quantità: lo registri con un tocco e poi, se serve, lo correggi.</p>
+
+{% if rows %}
+<ul class="elenco preset" data-test="presets">
+{% for p, t in rows %}
+  <li>
+    <form method="post" action="/pasti/da-preset/{{ p.id }}" class="tocco"><button type="submit" class="btn" aria-label="Registra {{ p.name }} adesso">Registra</button></form>
+    <a class="dettaglio" href="/preset/{{ p.id }}/modifica">
+      <span class="nome">{{ p.name }} <small>{% for i in p.items %}{{ i.food.label|truncate(28, true, '…') }} {{ i.grams|num }} g{% if not loop.last %} · {% endif %}{% endfor %}</small></span>
+      <span class="mono">{{ t.kcal|num(0) }} kcal · P {{ t.protein_g|num(0) }} g</span>
+    </a>
+    <form method="post" action="/preset/{{ p.id }}/elimina" data-confirm="Eliminare il preset «{{ p.name }}»?"><button type="submit" class="rimuovi" aria-label="Elimina">×</button></form>
+  </li>
+{% endfor %}
+</ul>
+{% else %}
+<p class="hint" data-test="empty">Nessun preset. Creane uno qui sotto, oppure apri un pasto registrato e scegli «Salva come preset».</p>
+{% endif %}
+<div class="btns"><a class="btn" href="/preset/nuovo">Nuovo preset</a></div>
+{% endblock %}

@@ -66,6 +66,14 @@
   <p class="hint" data-test="empty">Nessun pasto registrato{{ " oggi" if day == today else "" }}.</p>
   {% endif %}
   <div class="btns"><a class="btn" href="/pasti/nuovo?giorno={{ day.isoformat() }}">Aggiungi un pasto</a></div>
+  {% if presets %}
+  <div class="preset-rapidi" data-test="quick-presets">
+    <p class="eyebrow">Con un tocco</p>
+    {% for p in presets %}
+    <form method="post" action="/pasti/da-preset/{{ p.id }}?giorno={{ day.isoformat() }}"><button type="submit" class="chip">{{ p.name }}</button></form>
+    {% endfor %}
+  </div>
+  {% endif %}
 
   {% if workouts %}
   <h2>Attività</h2>

@@ -112,6 +112,21 @@ input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px;bord
 .settimana.sopra{border-left-color:var(--over)}
 .settimana.sotto{border-left-color:var(--accent)}
 
+/* presets and the personal library */
+.solito{display:block;font-size:12px;color:var(--muted);font-weight:400}
+.salva-preset{margin-top:32px;padding-top:20px;border-top:1px solid var(--line);display:grid;grid-template-columns:1fr auto;gap:0 16px;align-items:end}
+.salva-preset .btn{margin-bottom:14px}
+@media (max-width:520px){.salva-preset{grid-template-columns:1fr}}
+.elenco.preset li{gap:12px}
+.elenco.preset .tocco .btn{padding:10px 14px;min-height:44px;font-size:14px}
+.elenco.preset .dettaglio{flex:1;display:flex;justify-content:space-between;align-items:baseline;gap:12px;border-bottom:0;padding:0}
+.elenco.preset .dettaglio small{display:block;color:var(--muted);font-weight:400;font-size:13px}
+.preset-rapidi{margin-top:20px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.preset-rapidi .eyebrow{width:100%;margin:0 0 4px}
+.preset-rapidi form{margin:0}
+.chip{font:inherit;font-size:14px;font-weight:600;padding:10px 14px;min-height:44px;border:1px solid var(--navy);border-radius:2px;background:var(--white);color:var(--navy);cursor:pointer}
+.chip:hover{background:var(--accent);border-color:var(--accent);color:var(--text)}
+
 /* weights and workouts */
 .riga-form{display:grid;grid-template-columns:1fr 1fr auto;gap:0 16px;align-items:end}
 .riga-form .btn{margin-bottom:14px}

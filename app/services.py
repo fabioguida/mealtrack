@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.calc.nutrition import Totals
 from app.calc.targets import Targets, daily_targets
-from app.models import Meal, Profile, User, Weight, Workout
+from app.models import Meal, MealItem, Profile, User, Weight, Workout
 
 
 def current_weight(db: Session, user: User, day: date | None = None) -> float | None:
@@ -40,6 +40,32 @@ def targets_for(db: Session, user: User, day: date | None = None) -> Targets | N
         deficit,
         profile.protein_g_per_kg,
     )
+
+
+LIBRARY_SAMPLE = 5
+
+
+def usual_grams(db: Session, user: User, food_id: int) -> float | None:
+    """The personal library: the median of the user's last five portions of a
+    food, or None if they never logged it. No model is trained (HANDOVER.md 4.3)."""
+    grams = db.scalars(
+        select(MealItem.grams)
+        .join(Meal, Meal.id == MealItem.meal_id)
+        .where(Meal.user_id == user.id, MealItem.food_id == food_id)
+        .order_by(Meal.datetime.desc(), MealItem.id.desc())
+        .limit(LIBRARY_SAMPLE)
+    ).all()
+    if not grams:
+        return None
+    s = sorted(grams)
+    n = len(s)
+    return s[n // 2] if n % 2 else (s[n // 2 - 1] + s[n // 2]) / 2
+
+
+def meal_type_for(when: datetime) -> str:
+    """Default meal type from the hour of day."""
+    h = when.hour
+    return "colazione" if h < 11 else "pranzo" if h < 15 else "spezzafame" if h < 18 else "cena"
 
 
 def day_meals(db: Session, user: User, day: date) -> list[Meal]:

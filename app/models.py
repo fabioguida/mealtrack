@@ -112,6 +112,34 @@ class Meal(Base):
     )
 
 
+class MealPreset(Base):
+    """A recurring meal saved with its quantities, recalled with one tap."""
+
+    __tablename__ = "meal_presets"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    name: Mapped[str] = mapped_column(String(120), nullable=False)
+
+    items: Mapped[list["MealPresetItem"]] = relationship(
+        back_populates="preset", cascade="all, delete-orphan"
+    )
+
+
+class MealPresetItem(Base):
+    __tablename__ = "meal_preset_items"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    preset_id: Mapped[int] = mapped_column(
+        ForeignKey("meal_presets.id", ondelete="CASCADE"), nullable=False
+    )
+    food_id: Mapped[int] = mapped_column(ForeignKey("foods.id"), nullable=False)
+    grams: Mapped[float] = mapped_column(Float, nullable=False)
+
+    preset: Mapped[MealPreset] = relationship(back_populates="items")
+    food: Mapped[Food] = relationship()
+
+
 class MealItem(Base):
     __tablename__ = "meal_items"
 
