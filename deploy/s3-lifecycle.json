@@ -1,0 +1,17 @@
+{
+  "Rules": [
+    {
+      "ID": "backups-60-days",
+      "Filter": {"Prefix": "backups/"},
+      "Status": "Enabled",
+      "Expiration": {"Days": 60},
+      "NoncurrentVersionExpiration": {"NoncurrentDays": 7}
+    },
+    {
+      "ID": "photos-old-versions",
+      "Filter": {"Prefix": "photos/"},
+      "Status": "Enabled",
+      "NoncurrentVersionExpiration": {"NoncurrentDays": 30}
+    }
+  ]
+}

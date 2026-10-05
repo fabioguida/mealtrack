@@ -1,0 +1,15 @@
+[Unit]
+Description=Meal Tracker (FastAPI, uvicorn)
+After=network.target
+
+[Service]
+User=mealtrack
+Group=mealtrack
+WorkingDirectory=/srv/mealtrack/app
+EnvironmentFile=/srv/mealtrack/.env
+ExecStart=/srv/mealtrack/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 1 --proxy-headers --forwarded-allow-ips 127.0.0.1
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
