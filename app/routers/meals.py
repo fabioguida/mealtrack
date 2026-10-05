@@ -67,7 +67,7 @@ def _form_context(meal: Meal | None, items, errors, meal_type, when):
         "meal_types": MEAL_TYPES,
         "meal_type": meal_type,
         "when": when,
-        "photos_on": config.PHOTO_PROVIDER != "none",
+        "photos_on": True,
     }
 
 

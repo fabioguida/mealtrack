@@ -17,6 +17,7 @@
 <div id="foto-risultati">
   {% if meal and meal.photo_url %}<div class="foto-esito"><img src="{{ meal.photo_url }}" alt="Foto del pasto" class="anteprima"></div>{% endif %}
 </div>
+{% include "partials/photo_howto.html" %}
 {% endif %}
 
 <form method="post" action="{{ '/pasti/' ~ meal.id if meal else '/pasti' }}" class="meal-form"

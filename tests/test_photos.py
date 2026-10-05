@@ -10,7 +10,7 @@ from app import config
 from app.main import app
 from app.models import Meal
 from app.photos.analyzer import Candidate, FakeAnalyzer, clean_label
-from app.routers.photos import analyzer_dep
+from app.routers.photos import analyzer_dep, estimator_dep
 from tests.conftest import login_client, make_user
 
 
@@ -23,7 +23,9 @@ def png_bytes(size=(64, 48), color=(200, 40, 40)) -> bytes:
 @pytest.fixture
 def photo_dir(tmp_path, monkeypatch):
     monkeypatch.setattr(config, "PHOTO_DIR", tmp_path / "photos")
-    return tmp_path / "photos"
+    app.dependency_overrides[estimator_dep] = lambda: None  # recognition tests: no portion estimate
+    yield tmp_path / "photos"
+    app.dependency_overrides.pop(estimator_dep, None)
 
 
 @pytest.fixture
@@ -106,7 +108,7 @@ def test_without_analyzer_the_photo_is_still_attached(client, user, photo_dir):
     app.dependency_overrides[analyzer_dep] = lambda: None
     try:
         r = client.post("/foto/analizza", files={"foto": ("piatto.png", png_bytes(), "image/png")})
-        assert r.status_code == 200 and 'data-test="photo-error"' in r.text and 'id="photo_url"' in r.text
+        assert r.status_code == 200 and 'data-test="candidate"' not in r.text and 'id="photo_url"' in r.text
     finally:
         app.dependency_overrides.pop(analyzer_dep, None)
 

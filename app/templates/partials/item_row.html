@@ -1,6 +1,8 @@
 <div class="riga">
   <input type="hidden" name="food_id" value="{{ food.id }}">
-  <span class="nome">{{ food.label }}{% if usual %} <small class="solito" data-test="usual">di solito {{ usual|num }} g</small>{% endif %}</span>
+  <span class="nome">{{ food.label }}{% if usual %} <small class="solito" data-test="usual">di solito {{ usual|num }} g</small>{% endif %}
+    {% set chips = measures(food) %}{% if chips %}<span class="misure" data-test="measures">{% for label, g in chips %}<button type="button" class="misura" data-grams="{{ g }}">{{ label }} {{ g }} g</button>{% endfor %}</span>{% endif %}
+  </span>
   <label class="grammi"><input type="number" name="grams" value="{{ grams|num }}" min="1" step="any" inputmode="decimal" required> g</label>
   <button type="button" class="rimuovi" data-remove-row aria-label="Rimuovi">×</button>
 </div>

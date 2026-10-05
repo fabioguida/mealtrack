@@ -35,6 +35,9 @@ def fmt_datetime(value) -> str:
     return f"{fmt_date(value)}, {value:%H:%M}"
 
 
+from app.measures import measures_for  # noqa: E402
+
+templates.env.globals["measures"] = lambda food: measures_for(food.name, food.synonyms, food.category)
 templates.env.filters["num"] = fmt_num
 templates.env.filters["d"] = fmt_date
 templates.env.filters["time"] = lambda value: f"{value:%H:%M}"

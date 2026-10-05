@@ -1,25 +1,37 @@
 <input type="hidden" name="photo_url" id="photo_url" value="{{ photo_url }}" hx-swap-oob="true">
 <div class="foto-esito" data-test="photo-results">
   <img src="{{ photo_url }}" alt="Foto del pasto" class="anteprima">
-  {% if error %}
-  <p class="hint" data-test="photo-error">{{ error }}</p>
-  {% elif candidates %}
-  <p class="hint">Cosa c'è nella foto? Tocca per aggiungere (i grammi li correggi dopo).</p>
+
+  {% if estimate_on %}
+    {% if estimate %}
+    <div class="stima" data-test="estimate">
+      <p class="eyebrow">Porzione stimata dalla foto{% if not estimate.plate_found %} (piatto non riconosciuto: stima meno affidabile){% endif %}</p>
+      <p class="hint">Il cibo copre circa {{ estimate.area_cm2|num(0) }} cm². Tocca la riga giusta per mettere i grammi nell'ultimo alimento aggiunto; la stima è ±30 %.</p>
+      <div class="misure">
+        {% for key, label in estimate_types %}{% set lo, mid, hi = estimate.for_type(key) %}
+        <button type="button" class="misura" data-grams="{{ mid }}" data-test="estimate-chip">{{ label }}: {{ mid }} g <small>({{ lo }}–{{ hi }})</small></button>
+        {% endfor %}
+      </div>
+    </div>
+    {% else %}
+    <div class="stima" data-test="no-hand">
+      <p class="hint">{{ estimate_error or "Nessuna mano trovata nella foto: niente stima della porzione. La foto resta allegata." }}</p>
+      {% if not estimate_error %}{% include "partials/photo_howto.html" %}{% endif %}
+    </div>
+    {% endif %}
+  {% endif %}
+
+  {% if error %}<p class="hint" data-test="photo-error">{{ error }}</p>{% endif %}
+  {% if candidates %}
+  <p class="hint">Cosa c'è nella foto? Tocca per aggiungere.</p>
   <ul class="risultati">
   {% for c in candidates %}
     {% if c.kind == 'recipe' %}
-    <li class="piatto" data-test="candidate"><button type="button" hx-get="/pasti/righe?piatto={{ c.ref }}" hx-target="#righe" hx-swap="beforeend">
-      <span class="badge">Piatto</span><span class="nome">{{ c.display }}</span>
-    </button></li>
+    <li class="piatto" data-test="candidate"><button type="button" hx-get="/pasti/righe?piatto={{ c.ref }}" hx-target="#righe" hx-swap="beforeend"><span class="badge">Piatto</span><span class="nome">{{ c.display }}</span></button></li>
     {% else %}
-    <li data-test="candidate"><button type="button" hx-get="/pasti/riga?food_id={{ c.ref }}" hx-target="#righe" hx-swap="beforeend">
-      <span class="nome">{{ c.display }}</span>
-    </button></li>
+    <li data-test="candidate"><button type="button" hx-get="/pasti/riga?food_id={{ c.ref }}" hx-target="#righe" hx-swap="beforeend"><span class="nome">{{ c.display }}</span></button></li>
     {% endif %}
   {% endfor %}
   </ul>
-  <p class="hint">Non c'è? Cerca l'alimento qui sotto: la foto resta allegata.</p>
-  {% else %}
-  <p class="hint">Nessun candidato: cerca l'alimento qui sotto, la foto resta allegata.</p>
   {% endif %}
 </div>

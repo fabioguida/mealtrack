@@ -42,6 +42,22 @@
     if (results) results.innerHTML = '';
   });
 
+  // Household-measure chips and portion-estimate chips fill a grams field.
+  document.addEventListener('click', function (e) {
+    var chip = e.target.closest('[data-grams]');
+    if (!chip) return;
+    var row = chip.closest('.riga');
+    var input = row ? row.querySelector('input[name="grams"]') : null;
+    if (!input) {
+      // Estimate chips live outside the rows: fill the last row added.
+      var rows = document.querySelectorAll('#righe .riga input[name="grams"]');
+      input = rows.length ? rows[rows.length - 1] : null;
+    }
+    if (!input) return;
+    input.value = chip.getAttribute('data-grams');
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+
   // Confirmation on destructive forms.
   document.addEventListener('submit', function (e) {
     var msg = e.target.getAttribute('data-confirm');

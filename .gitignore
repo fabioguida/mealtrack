@@ -15,6 +15,7 @@ data/usda/
 data/*.xlsx
 data/photos/
 data/cache/
+data/models/
 
 # Editors / OS
 .vscode/
