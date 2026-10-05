@@ -4,3 +4,4 @@
 #   pip install -r requirements-photo.txt
 sentence-transformers>=3.0
 pillow>=10.0
+truststore>=0.10   # model download through a corporate / antivirus root certificate

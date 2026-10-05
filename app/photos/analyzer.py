@@ -98,6 +98,14 @@ class ClipAnalyzer:
         self._text_emb = None
 
     def _load(self):
+        try:
+            # Model downloads on machines whose HTTPS goes through a local root
+            # certificate (corporate proxy, antivirus): trust the OS store.
+            import truststore
+
+            truststore.inject_into_ssl()
+        except ImportError:
+            pass
         import numpy as np
         from sentence_transformers import SentenceTransformer
 
