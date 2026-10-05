@@ -1,0 +1,6 @@
+# Optional: the local CLIP photo analyzer (PHOTO_PROVIDER=clip).
+# Install PyTorch CPU first to avoid the CUDA build:
+#   pip install torch --index-url https://download.pytorch.org/whl/cpu
+#   pip install -r requirements-photo.txt
+sentence-transformers>=3.0
+pillow>=10.0

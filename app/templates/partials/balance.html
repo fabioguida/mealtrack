@@ -69,7 +69,7 @@
   <ul class="elenco" data-test="day-meals">
   {% for m in meals %}
     <li><a href="/pasti/{{ m.id }}/modifica">
-      <span class="foto" aria-hidden="true">{{ m.meal_type[:1]|upper }}</span>
+      {% if m.photo_url %}<img class="foto" src="{{ m.photo_url }}" alt="">{% else %}<span class="foto" aria-hidden="true">{{ m.meal_type[:1]|upper }}</span>{% endif %}
       <span class="nome">{{ m.meal_type|capitalize }} <small>{{ m.datetime|time }} · {{ m.items|length }} aliment{{ 'o' if m.items|length == 1 else 'i' }}</small></span>
       <span class="mono">{{ m.items|sum(attribute='kcal')|num(0) }} kcal · P {{ m.items|sum(attribute='protein_g')|num(0) }} g</span>
     </a></li>

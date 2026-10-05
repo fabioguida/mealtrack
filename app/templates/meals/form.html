@@ -9,9 +9,20 @@
 <ul class="errors" data-test="errors">{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
 {% endif %}
 
+{% if photos_on %}
+<form class="foto" hx-post="/foto/analizza" hx-encoding="multipart/form-data" hx-trigger="change" hx-target="#foto-risultati" hx-indicator="#foto-attesa">
+  <label class="btn ghost foto-btn">📷 Fotografa il piatto <input type="file" name="foto" accept="image/*" capture="environment" hidden></label>
+  <span id="foto-attesa" class="htmx-indicator mono">riconoscimento in corso…</span>
+</form>
+<div id="foto-risultati">
+  {% if meal and meal.photo_url %}<div class="foto-esito"><img src="{{ meal.photo_url }}" alt="Foto del pasto" class="anteprima"></div>{% endif %}
+</div>
+{% endif %}
+
 <form method="post" action="{{ '/pasti/' ~ meal.id if meal else '/pasti' }}" class="meal-form"
       hx-post="/pasti/totali" hx-trigger="change from:#righe, input delay:400ms from:#righe"
       hx-target="#totali" hx-swap="innerHTML">
+  <input type="hidden" name="photo_url" id="photo_url" value="{{ meal.photo_url if meal and meal.photo_url else '' }}">
   <div class="fields">
     <label>Data e ora
       <input type="datetime-local" name="when" value="{{ when.strftime('%Y-%m-%dT%H:%M') }}" required>

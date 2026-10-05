@@ -4,6 +4,7 @@
 <p class="eyebrow">{{ meal.datetime|dt }}</p>
 <h1>{{ meal.meal_type|capitalize }}</h1>
 
+{% if meal.photo_url %}<img src="{{ meal.photo_url }}" alt="Foto del pasto" class="anteprima" data-test="photo">{% endif %}
 <ul class="voci" data-test="items">
 {% for i in meal.items %}
   <li><span class="nome">{{ i.food.label }}</span><span class="mono">{{ i.grams|num }} g · {{ i.kcal|num }} kcal</span></li>

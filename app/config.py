@@ -31,3 +31,11 @@ COOKIE_SECURE = os.environ.get("COOKIE_SECURE", "false").lower() == "true"
 SESSION_DAYS = int(os.environ.get("SESSION_DAYS", "30"))
 # Family and friends register themselves; close it once everyone is in.
 ALLOW_SIGNUP = os.environ.get("ALLOW_SIGNUP", "true").lower() == "true"
+
+# Meal photos: where they are stored and which analyzer reads them.
+# PHOTO_PROVIDER: "clip" (open-weights CLIP, local, free) or "none".
+PHOTO_DIR = Path(os.environ.get("PHOTO_DIR", PROJECT_ROOT / "data" / "photos"))
+PHOTO_PROVIDER = os.environ.get("PHOTO_PROVIDER", "clip")
+PHOTO_MAX_PX = int(os.environ.get("PHOTO_MAX_PX", "1600"))
+PHOTO_CANDIDATES = int(os.environ.get("PHOTO_CANDIDATES", "8"))
+CACHE_DIR = PROJECT_ROOT / "data" / "cache"

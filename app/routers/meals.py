@@ -8,6 +8,7 @@ from fastapi.responses import RedirectResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
+from app import config
 from app.calc.nutrition import item_values, meal_totals
 from app.db import get_db
 from app.deps import current_user, templates
@@ -66,6 +67,7 @@ def _form_context(meal: Meal | None, items, errors, meal_type, when):
         "meal_types": MEAL_TYPES,
         "meal_type": meal_type,
         "when": when,
+        "photos_on": config.PHOTO_PROVIDER != "none",
     }
 
 
@@ -155,12 +157,15 @@ def _save(
     meal_type: str,
     items: list[tuple[Food, float]],
     input_method: str = "manual",
+    photo_url: str | None = None,
 ) -> Meal:
     if meal is None:
-        meal = Meal(user_id=user.id, input_method=input_method)
+        meal = Meal(user_id=user.id, input_method="photo" if photo_url else input_method)
         db.add(meal)
     meal.datetime = when
     meal.meal_type = meal_type
+    if photo_url is not None:
+        meal.photo_url = photo_url or None
     meal.items.clear()
     for food, g in items:
         v = item_values(food, g)
@@ -178,7 +183,12 @@ def _save(
     return meal
 
 
-def _handle_form(request, db, user, meal, when_s, meal_type, food_id, grams):
+def _own_photo(user: User, photo_url: str) -> str:
+    """Only a photo stored for this user may be attached; anything else is dropped."""
+    return photo_url if photo_url.startswith(f"/foto/{user.id}/") else ""
+
+
+def _handle_form(request, db, user, meal, when_s, meal_type, food_id, grams, photo_url=""):
     errors: list[str] = []
     try:
         when = datetime.fromisoformat(when_s)
@@ -194,7 +204,7 @@ def _handle_form(request, db, user, meal, when_s, meal_type, food_id, grams):
         return templates.TemplateResponse(
             request, "meals/form.html", ctx, status_code=422
         )
-    saved = _save(db, user, meal, when, meal_type, items)
+    saved = _save(db, user, meal, when, meal_type, items, photo_url=_own_photo(user, photo_url))
     return RedirectResponse(f"/pasti/{saved.id}", status_code=303)
 
 
@@ -205,10 +215,11 @@ def crea(
     meal_type: Annotated[str, Form()],
     food_id: Annotated[list[int], Form()] = [],
     grams: Annotated[list[float], Form()] = [],
+    photo_url: Annotated[str, Form()] = "",
     db: Session = Depends(get_db),
     user: User = Depends(current_user),
 ):
-    return _handle_form(request, db, user, None, when, meal_type, food_id, grams)
+    return _handle_form(request, db, user, None, when, meal_type, food_id, grams, photo_url)
 
 
 @router.post("/da-preset/{preset_id}")
@@ -291,11 +302,12 @@ def aggiorna(
     meal_type: Annotated[str, Form()],
     food_id: Annotated[list[int], Form()] = [],
     grams: Annotated[list[float], Form()] = [],
+    photo_url: Annotated[str, Form()] = "",
     db: Session = Depends(get_db),
     user: User = Depends(current_user),
 ):
     meal = _own_meal(db, user, meal_id)
-    return _handle_form(request, db, user, meal, when, meal_type, food_id, grams)
+    return _handle_form(request, db, user, meal, when, meal_type, food_id, grams, photo_url)
 
 
 @router.post("/{meal_id}/elimina")

@@ -1,0 +1,25 @@
+<input type="hidden" name="photo_url" id="photo_url" value="{{ photo_url }}" hx-swap-oob="true">
+<div class="foto-esito" data-test="photo-results">
+  <img src="{{ photo_url }}" alt="Foto del pasto" class="anteprima">
+  {% if error %}
+  <p class="hint" data-test="photo-error">{{ error }}</p>
+  {% elif candidates %}
+  <p class="hint">Cosa c'è nella foto? Tocca per aggiungere (i grammi li correggi dopo).</p>
+  <ul class="risultati">
+  {% for c in candidates %}
+    {% if c.kind == 'recipe' %}
+    <li class="piatto" data-test="candidate"><button type="button" hx-get="/pasti/righe?piatto={{ c.ref }}" hx-target="#righe" hx-swap="beforeend">
+      <span class="badge">Piatto</span><span class="nome">{{ c.display }}</span>
+    </button></li>
+    {% else %}
+    <li data-test="candidate"><button type="button" hx-get="/pasti/riga?food_id={{ c.ref }}" hx-target="#righe" hx-swap="beforeend">
+      <span class="nome">{{ c.display }}</span>
+    </button></li>
+    {% endif %}
+  {% endfor %}
+  </ul>
+  <p class="hint">Non c'è? Cerca l'alimento qui sotto: la foto resta allegata.</p>
+  {% else %}
+  <p class="hint">Nessun candidato: cerca l'alimento qui sotto, la foto resta allegata.</p>
+  {% endif %}
+</div>
